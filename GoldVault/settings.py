@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-9h&@2j@(ida_e939isf5q(m6m#_s7@w*(cfw2s+s5*$l#3i0tc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*','vgold.app','192.168.162.44','192.168.26.44']
 
 
 # Application definition
@@ -120,17 +120,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-STATIC_URL = 'static/'
-MEDIA_URL = 'images/'
+# STATIC_URL = 'static/'
+STATIC_URL = 'GoldVault/static/'
+
+# MEDIA_URL = 'images/'
+MEDIA_URL = 'GoldVault/images/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static'
+    # BASE_DIR / 'static'
+    BASE_DIR / 'GoldVault/static'
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'images'
