@@ -1,0 +1,831 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Gold Vault</title>
+    <meta name="description" content="Gold Vault HTML Mobile Template">
+    <meta name="keywords"
+        content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/icon/192x192.png' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="manifest" href="{% static '__manifest.json' %}">
+</head>
+
+<body>
+
+    <!-- loader -->
+    <div id="loader">
+        <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+    </div>
+    <!-- * loader -->
+
+    <!-- App Header -->
+    <div class="appHeader bg-primary text-light">
+        <div class="left">
+            <a href="#" class="headerButton" data-bs-toggle="modal" data-bs-target="#sidebarPanel">
+                <ion-icon name="menu-outline"></ion-icon>
+            </a>
+        </div>
+        <div class="pageTitle">
+            <!-- <img src="{% static 'assets/img/wallet_6592084.png' %}" alt="logo" class="logo" width="60px" height="70px"> -->
+            <span style="color: white; font-size: 20px; font-weight: bold;">Gold Vault1</span>
+        </div>
+        <div class="right">
+            <!-- Notifications -->
+            <a href="app-notifications.html" class="headerButton">
+                <ion-icon class="icon" name="notifications-outline"></ion-icon>
+                <span class="badge badge-danger">4</span>
+            </a>
+
+            <!-- Profile -->
+            <a href="{% url 'setting' %}" class="headerButton">
+                <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged w32">
+                <span class="badge badge-danger">6</span>
+            </a>
+
+            <!-- Logout -->
+            <a href="{% url 'logout' %}" class="headerButton">
+                <ion-icon class="icon" name="log-out-outline"></ion-icon>
+            </a>
+        </div>
+    </div>
+    <!-- * App Header -->
+
+
+    <!-- App Capsule -->
+    <div id="appCapsule">
+
+        <!-- Wallet Card -->
+        <div class="section wallet-card-section pt-1">
+            <div class="wallet-card">
+                <!-- Balance -->
+                <div class="balance">
+                    <div class="left">
+                        <span class="title">Gold Rate Per Gram</span>
+                        <h1 class="total">₹ {{ sell_rate }}</h1>
+                    </div>
+
+                    <div class="right">
+                        <a href="#" class="button" data-bs-toggle="modal" data-bs-target="#depositActionSheet">
+                            <ion-icon name="add-outline"></ion-icon>
+                        </a>
+                    </div>
+                </div>
+                <!-- * Balance -->
+                <!-- Wallet Footer -->
+                <div class="wallet-footer">
+                    <div class="item">
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#withdrawActionSheet">
+                            <div class="icon-wrapper bg-danger">
+                                <ion-icon name="arrow-down-outline"></ion-icon>
+                            </div>
+                            <strong>Buy</strong>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <a href="javascript:void(0);" id="load-transactions">
+                            <div class="icon-wrapper">
+                                <ion-icon name="arrow-forward-outline"></ion-icon>
+                            </div>
+                            <strong>Transactions</strong>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#sendActionSheet">
+                            <div class="icon-wrapper">
+                                <ion-icon name="arrow-forward-outline"></ion-icon>
+                            </div>
+                            <strong>Withdraw</strong>
+                        </a>
+                    </div>
+                    
+                    <!-- <div class="item">
+                        <a href="app-cards.html">
+                            <div class="icon-wrapper bg-success">
+                                <ion-icon name="card-outline"></ion-icon>
+                            </div>
+                            <strong>Cards</strong>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#exchangeActionSheet">
+                            <div class="icon-wrapper bg-warning">
+                                <ion-icon name="swap-vertical"></ion-icon>
+                            </div>
+                            <strong>Exchange</strong>
+                        </a>
+                    </div> -->
+
+                </div>
+                <!-- * Wallet Footer -->
+            </div>
+        </div>
+        <!-- Wallet Card -->
+
+        <!-- Deposit Action Sheet -->
+        <div class="modal fade action-sheet" id="depositActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Purchase Gold</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="post" action="{% url 'booking' %}">
+                                {% csrf_token %}
+                                <!-- <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account1">Product</label>
+                                        <select class="form-control custom-select" id="account1">
+                                            <option value="gold">Select</option>
+                                            <option value="gold">Gold</option>
+                                        </select>
+                                    </div>
+                                </div> -->
+
+                                <div class="form-group basic animated">
+                                    <label class="label">Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="text" name="amount" class="form-control"
+                                            placeholder="Enter an amount"
+                                            value=" 0"
+                                            min="0" max="999999.99" step="0.01"
+                                            oninput="if(this.value.length > 9) this.value = this.value.slice(0,9);">
+                                    </div>
+                                </div>
+                                <div class="form-group basic animated">
+                                    <label class="label">Gold Weight</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text"><img src="{% static 'assets/img/download.jpg' %}" alt="g" style="height:20px; width:auto;"></span>
+                                        <input type="text" name="weight" class="form-control"
+                                            placeholder="Enter gold weight"
+                                            oninput="
+                                                let val = this.value;
+                                                if(val && !/^\d{0,2}(\.\d{0,6})?$/.test(val)){
+                                                    val = val.match(/^\d{0,2}(\.\d{0,6})?/)[0];
+                                                }
+                                                if(val.includes('.')){
+                                                    let [intPart, decPart] = val.split('.');
+                                                    if(decPart.length > 5){
+                                                        val = (Math.round(parseFloat(val) * 100000) / 100000).toFixed(5);
+                                                    }
+                                                }
+                                                this.value = val;
+                                            ">
+                                    </div>
+                                </div>
+                                <div class="form-group basic">
+                                    <button type="submit" class="btn btn-primary btn-block btn-lg">Buy Now</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Deposit Action Sheet -->
+
+        <!-- Withdraw Action Sheet -->
+        <div class="modal fade action-sheet" id="withdrawActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Withdraw Money</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form>
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account2d">From</label>
+                                        <select class="form-control custom-select" id="account2d">
+                                            <option value="0">Savings (*** 5019)</option>
+                                            <option value="1">Investment (*** 6212)</option>
+                                            <option value="2">Mortgage (*** 5021)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="text11d">To</label>
+                                        <input type="email" class="form-control" id="text11d" placeholder="Enter IBAN">
+                                        <i class="clear-input">
+                                            <ion-icon name="close-circle"></ion-icon>
+                                        </i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" id="basic-addonb1">$</span>
+                                        <input type="text" class="form-control" placeholder="Enter an amount"
+                                            value="100">
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <button type="button" class="btn btn-primary btn-block btn-lg"
+                                        data-bs-dismiss="modal">Withdraw</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Withdraw Action Sheet -->
+
+        <!-- Send Action Sheet -->
+        <div class="modal fade action-sheet" id="sendActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Send Money</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="POST" action="{% url 'send_money' %}">
+                                {% csrf_token %}
+                                <!-- <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account2">From</label>
+                                        <select class="form-control custom-select" id="account2">
+                                            <option value="0">Savings (*** 5019)</option>
+                                            <option value="1">Investment (*** 6212)</option>
+                                            <option value="2">Mortgage (*** 5021)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="text11">To</label>
+                                        <input type="email" class="form-control" id="text11"
+                                            placeholder="Enter bank ID">
+                                        <i class="clear-input">
+                                            <ion-icon name="close-circle"></ion-icon>
+                                        </i>
+                                    </div>
+                                </div> -->
+
+                                <div class="form-group basic">
+                                    <label class="label" for="withdraw_weight">Withdraw Weight</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">
+                                            <img src="static/assets/img/download.jpg" alt="logo" style="height: 20px; width: 20px;">
+                                        </span>
+                                        <input type="number" class="form-control" id="withdraw_weight" name="withdraw_weight" value="0" required>
+                                    </div>
+                                </div>
+                                <div class="form-group basic">
+                                    <label class="label" for="withdraw_amount">Withdraw Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" class="form-control" id="withdraw_amount" name="withdraw_amount" value="0" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <button type="submit" class="btn btn-primary btn-block btn-lg">Send</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Send Action Sheet -->
+
+        <!-- Exchange Action Sheet -->
+        <div class="modal fade action-sheet" id="exchangeActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Exchange Money</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group basic">
+                                            <div class="input-wrapper">
+                                                <label class="label" for="currency1">From</label>
+                                                <select class="form-control custom-select" id="currency1">
+                                                    <option value="1">EUR</option>
+                                                    <option value="2">USD</option>
+                                                    <option value="3">AUD</option>
+                                                    <option value="4">CAD</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group basic">
+                                            <div class="input-wrapper">
+                                                <label class="label" for="currency2">To</label>
+                                                <select class="form-control custom-select" id="currency2">
+                                                    <option value="1">USD</option>
+                                                    <option value="1">EUR</option>
+                                                    <option value="2">AUD</option>
+                                                    <option value="3">CAD</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" id="basic-addon2">$</span>
+                                        <input type="text" class="form-control" placeholder="Enter an amount"
+                                            value="100">
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group basic">
+                                    <button type="button" class="btn btn-primary btn-block btn-lg"
+                                        data-bs-dismiss="modal">Exchange</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Exchange Action Sheet -->
+
+        <!-- Stats -->
+        <div class="section">
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Current Balance</div>
+                        <div class="value" id="current_balance">
+                            ₹ {{ stats.current_balance }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Gain/Loss</div>
+                        <div class="value">₹ {{ stats.gain_loss }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Total Invested</div>
+                        <div class="value">₹ {{ stats.total_invested }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Total Withdrwal</div>
+                        <div class="value">₹ {{ stats.total_withdrwal }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Purchace Weight</div>
+                        <div class="value">₹ {{ stats.product_weight }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Withdrwal Weight</div>
+                        <div class="value">₹ {{ stats.withdrawl_weight }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- * Stats -->
+
+        <!-- Transactions -->
+        <div class="section mt-4">
+            <div class="section-heading">
+                <h2 class="title">Transactions</h2>
+                <a href="javascript:void(0);" id="view-all" class="link">View All</a>
+            </div>
+            <div class="transactions" id="transaction-list">
+            </div>
+        </div>
+
+        <!-- * Transactions -->
+
+        <!-- my cards -->
+        <!-- * my cards -->
+
+        <!-- Send Money -->
+        <!-- Monthly Bills -->
+        <!-- * Monthly Bills -->
+
+
+        <!-- Saving Goals -->
+        
+        <!-- app footer -->
+        <div class="appFooter">
+            <div class="footer-title">
+                
+            </div>
+           
+        </div>
+        <!-- * app footer -->
+
+    </div>
+    <!-- * App Capsule -->
+
+
+    <!-- App Bottom Menu -->
+    
+    <!-- * App Bottom Menu -->
+
+    <!-- App Sidebar -->
+    <div class="modal fade panelbox panelbox-left" id="sidebarPanel" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <!-- profile box -->
+                    <div class="profileBox pt-2 pb-2">
+                        <div class="image-wrapper">
+                            <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged  w36">
+                        </div>
+                        <div class="in">
+                            <strong>{{ user.UserFullName }}</strong>
+                            <div class="text-muted">{{ user.UserMobileNo }}</div>
+                        </div>
+                        <a href="#" class="btn btn-link btn-icon sidebar-close" data-bs-dismiss="modal">
+                            <ion-icon name="close-outline"></ion-icon>
+                        </a>
+                    </div>
+                    <!-- * profile box -->
+                    <!-- balance -->
+                    <div class="sidebar-balance">
+                        <div class="listview-title">Today's Gold Rate</div>
+                        <div class="in">
+                            <h1 class="amount">₹{{sell_rate}}</h1>
+                        </div>
+                    </div>
+                    <!-- * balance -->
+
+                    <!-- action group -->
+                    <div class="action-group">
+                        <!-- <a href="index.html" class="action-button">
+                            <div class="in">
+                                <div class="iconbox">
+                                    <ion-icon name="add-outline"></ion-icon>
+                                </div>
+                                Deposit
+                            </div>
+                        </a> -->
+                        <a href="index.html" class="action-button">
+                            <div class="in">
+                                <div class="iconbox">
+                                    <ion-icon name="arrow-down-outline"></ion-icon>
+                                </div>
+                                Buy
+                            </div>
+                        </a>
+                        <a href="app-cards.html" class="action-button">
+                            <div class="in">
+                                <div class="iconbox">
+                                    <ion-icon name="card-outline"></ion-icon>
+                                </div>
+                                Transaction
+                            </div>
+                        </a>
+                        <a href="index.html" class="action-button">
+                            <div class="in">
+                                <div class="iconbox">
+                                    <ion-icon name="arrow-forward-outline"></ion-icon>
+                                </div>
+                                Withdraw
+                            </div>
+                        </a>
+                        
+                    </div>
+                    <!-- * action group -->
+
+                    <!-- menu -->
+                    <div class="listview-title mt-1">Option</div>
+                    <ul class="listview flush transparent no-line image-listview">
+                        <li>
+                            <a href="index.html" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="pie-chart-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    FAQ
+                                    <!-- <span class="badge badge-primary">10</span> -->
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="app-pages.html" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Support
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="app-components.html" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="apps-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Call Our Office(10AM To 9PM)
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'setting' %}" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="card-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Setting
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                    <!-- * menu -->
+
+                    <!-- others -->
+                    <!-- <div class="listview-title mt-1">Others</div> -->
+                    <ul class="listview flush transparent no-line image-listview">
+                        <li>
+                            <a href="app-settings.html" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="settings-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Raise A Query
+                                </div>
+                            </a>
+                        </li>
+                        <!-- <li>
+                            <a href="component-messages.html" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="chatbubble-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Support
+                                </div>
+                            </a>
+                        </li> -->
+                        <li>
+                            <a href="{% url 'logout' %}"class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="log-out-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Log out
+                                </div>
+                            </a>
+                        </li>
+
+
+                    </ul>
+                    <!-- * others -->
+
+                    <!-- send money -->
+                    <!-- <div class="listview-title mt-1">Send Money</div>
+                    <ul class="listview image-listview flush transparent no-line">
+                        <li>
+                            <a href="#" class="item">
+                                <img src="{% static 'assets/img/sample/avatar/avatar2.jpg' %}" alt="image" class="image">
+                                <div class="in">
+                                    <div>Artem Sazonov</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="item">
+                                <img src="{% static 'assets/img/sample/avatar/avatar4.jpg' %}" alt="image" class="image">
+                                <div class="in">
+                                    <div>Sophie Asveld</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="item">
+                                <img src="{% static 'assets/img/sample/avatar/avatar3.jpg' %}" alt="image" class="image">
+                                <div class="in">
+                                    <div>Kobus van de Vegte</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul> -->
+                    <!-- * send money -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- * App Sidebar -->
+
+
+
+    <!-- iOS Add to Home Action Sheet -->
+    <div class="modal inset fade action-sheet ios-add-to-home" id="ios-add-to-home-screen" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add to Home Screen</h5>
+                    <a href="#" class="close-button" data-bs-dismiss="modal">
+                        <ion-icon name="close"></ion-icon>
+                    </a>
+                </div>
+                <div class="modal-body">
+                    <div class="action-sheet-content text-center">
+                        <div class="mb-1"><img src="{% static 'assets/img/icon/192x192.png' %}" alt="image" class="imaged w64 mb-2">
+                        </div>
+                        <div>
+                            Install <strong>Gold Vault</strong> on your iPhone's home screen.
+                        </div>
+                        <div>
+                            Tap <ion-icon name="share-outline"></ion-icon> and Add to homescreen.
+                        </div>
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-block" data-bs-dismiss="modal">CLOSE</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- * iOS Add to Home Action Sheet -->
+
+
+    <!-- Android Add to Home Action Sheet -->
+    <div class="modal inset fade action-sheet android-add-to-home" id="android-add-to-home-screen" tabindex="-1"
+        role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add to Home Screen</h5>
+                    <a href="#" class="close-button" data-bs-dismiss="modal">
+                        <ion-icon name="close"></ion-icon>
+                    </a>
+                </div>
+                <div class="modal-body">
+                    <div class="action-sheet-content text-center">
+                        <div class="mb-1">
+                            <img src="{% static 'assets/img/icon/192x192.png' %}" alt="image" class="imaged w64 mb-2">
+                        </div>
+                        <div>
+                            Install <strong>Gold Vault</strong> on your Android's home screen.
+                        </div>
+                        <div>
+                            Tap <ion-icon name="ellipsis-vertical"></ion-icon> and Add to homescreen.
+                        </div>
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-block" data-bs-dismiss="modal">CLOSE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- * Android Add to Home Action Sheet -->
+
+
+
+    <div id="cookiesbox" class="offcanvas offcanvas-bottom cookies-box" tabindex="-1" data-bs-scroll="true"
+        data-bs-backdrop="false">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">We use cookies</h5>
+        </div>
+        <div class="offcanvas-body">
+            <div>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla non lacinia quam. Nulla facilisi.
+                <a href="#" class="text-secondary"><u>Learn more</u></a>
+            </div>
+            <div class="buttons">
+                <a href="#" class="btn btn-primary btn-block" data-bs-dismiss="offcanvas">I understand</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========= JS Files =========  -->
+    <!-- Bootstrap -->
+    <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+    <!-- Ionicons -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <!-- Splide -->
+    <script src="{% static 'assets/js/plugins/splide/splide.min.js' %}"></script>
+    <!-- Base Js File -->
+    <script src="{% static 'assets/js/base.js' %}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const apiUrl = "https://www.gyaagl.app/goldvault_api/getbalances"; 
+            const payload = {
+                ClientCode: "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+                UserCode: "{{ user }}" 
+            };
+            console.log("UserCode from session:", payload.UserCode);
+            fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message_code === 1000) {
+                    const stats = data.message_data[0];
+                    document.getElementById("current_balance").innerText = "₹ " + stats.CurrentBalance;
+                    document.getElementById("todays_value").innerText = "₹ " + stats.TodaysValue;
+                    document.getElementById("total_invested").innerText = "₹ " + stats.TotalInvested;
+                    document.getElementById("gain_loss").innerText = "₹ " + stats.GainLoss;
+                } else {
+                    console.error("API Error:", data.message_text);
+                }
+            })
+            .catch(err => console.error("Fetch Error:", err));
+        });
+        AddtoHome("2000", "once");
+            let allTransactions = [];
+        let showingAll = false;
+
+        document.getElementById("load-transactions").addEventListener("click", function() {
+            fetch("/get-transactions/")
+            .then(response => response.json())
+            .then(data => {
+                if (data.transactions && data.transactions.length > 0) {
+                    allTransactions = data.transactions;
+                    renderTransactions(false); // show only 5 by default
+                } else {
+                    document.getElementById("transaction-list").innerHTML = "<p>No transactions found</p>";
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching transactions:", error);
+            });
+        });
+
+        // Toggle between 5 and all
+        document.getElementById("view-all").addEventListener("click", function() {
+            showingAll = !showingAll;
+            renderTransactions(showingAll);
+            this.innerText = showingAll ? "View Less" : "View All";
+        });
+
+        // Render function
+        function renderTransactions(showAll) {
+            let container = document.getElementById("transaction-list");
+            container.innerHTML = "";
+
+            let transactionsToShow = showAll ? allTransactions : allTransactions.slice(0, 5);
+
+            transactionsToShow.forEach(tx => {
+                let cssClass = tx.type === "+" ? "price text-success" : "price text-danger";
+                container.innerHTML += `
+                    <a href="#" class="item">
+                        <div class="detail">
+                            <div>
+                                <strong>Txn ID: ${tx.id}</strong>
+                                <p>Status: ${tx.status}</p>
+                            </div>
+                        </div>
+                        <div class="right">
+                            <div class="${cssClass}">
+                                ${tx.type} | Date: ${tx.date}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>

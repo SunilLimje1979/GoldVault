@@ -1,0 +1,150 @@
+<!doctype html>
+{% load static %}
+{% load pwa %}
+
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Gold Vault</title>
+    <meta name="description" content="Gold Vault HTML Mobile Template">
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/icon/192x192.png' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="manifest" href="{% static 'assets/__manifest.json' %}">
+
+</head>
+
+<body>
+    <style>
+    html, body, #appCapsule {
+        background-color: #175754 !important;
+        height: 100%;
+    }
+
+    .btn-success-custom {
+        background: linear-gradient(95.25deg, #f8f0ba, #edc88f 104.24%) !important; 
+        color: #fff !important;
+        border: none;
+        transition: background 0.3s;
+    }
+
+
+    .btn-success-custom:hover {
+        background: linear-gradient(95.25deg, #edc88f, #edc88f 104.24%) !important; 
+        color: #000 !important; 
+    }
+
+    </style>
+    <!-- loader -->
+    <div id="loader">
+        <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+    </div>
+    <div id="appCapsule">
+
+        <div class="section mt-2 text-center">
+            <img src="{% static 'assets/img/wallet_6592084.png' %}" alt="Logo" class="logo" width="80" height="80">
+            <h1 style="color:#ffffff;">Gold Vault</h1>
+        </div>
+        <div class="section mb-5 p-2">
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-body pb-1">
+                        <div class="form-group basic animated">
+                            <div class="input-wrapper">
+                                <label class="label" for="mobile">Mobile Number Number</label>
+                                <input type="text" name="mobile" class="form-control" id="mobile" placeholder="Your mobile number" minlength="10" maxlength="10" pattern="\d{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <i class="clear-input">
+                                    <ion-icon name="close-circle"></ion-icon>
+                                </i>
+                            </div>
+                        </div>
+                        <div class="form-group basic animated">
+                            <div class="input-wrapper">
+                                <label class="label" for="pin_number">Pin Number</label>
+                                <input type="password" name="pin_number" class="form-control" id="pin_number" placeholder="Your Pin Number" autocomplete="off" maxlength="4" pattern="\d{4}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <i class="clear-input">
+                                    <ion-icon name="close-circle"></ion-icon>
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-links mt-2">
+                    <div class="text-center">
+                        <span style="color: floralwhite;">New User?</span> 
+                        <a href="{% url 'register' %}">Register Now</a>
+                    </div>
+                        <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 mb-2 px-4">
+                        <button type="submit" class="btn btn-success-custom btn-block btn-lg w-100 " style="color: black !important;">Log in</button>
+                    </div>
+
+                    <div class="col-12 mb-2 px-4">
+                        <button id="installApp" class="btn btn-success-custom btn-block btn-lg w-100" style="color: black !important;">
+                            Install App
+                        </button>
+                    </div>
+                </div>
+                <div id="pwaInstallModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
+                    <div style="background:#fff; padding:20px; border-radius:10px; text-align:center; max-width:300px; width:90%;">
+                        <h3>Install Gold Vault</h3>
+                        <p>Get quick access to Gold Vault by installing it on your device.</p>
+                        <button id="pwaInstallBtn" style="margin:5px; padding:10px 20px; background:#28a745; color:#fff; border:none; border-radius:5px;">Install</button>
+                        <button id="pwaCancelBtn" style="margin:5px; padding:10px 20px; background:#ccc; color:#000; border:none; border-radius:5px;">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Bootstrap -->
+    <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+    <!-- Ionicons -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <!-- Splide -->
+    <script src="{% static 'assets/js/plugins/splide/splide.min.js' %}"></script>
+    <!-- Base Js File -->
+    <script src="{% static 'assets/js/base.js' %}"></script>
+
+    <script>
+    let deferredPrompt;
+    const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    if (!isAppInstalled) {
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault(); 
+            deferredPrompt = e;
+            const modal = document.getElementById('pwaInstallModal');
+            modal.style.display = 'flex';
+            const installBtn = document.getElementById('pwaInstallBtn');
+            const cancelBtn = document.getElementById('pwaCancelBtn');
+            installBtn.addEventListener('click', async () => {
+                modal.style.display = 'none';
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+            });
+            cancelBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                modal.style.display = 'none';
+            });
+        });
+    }
+    window.addEventListener("appinstalled", () => {
+        console.log("PWA was installed");
+    });
+    </script>
+</body>
+
+</html>
