@@ -68,14 +68,20 @@
                             </div>
                         </div>
                         <div class="form-group basic animated">
-                            <div class="input-wrapper">
+                            <div class="input-wrapper" style="position: relative;">
                                 <label class="label" for="pin_number">Login Pin Number</label>
-                                <input type="password" name="pin_number" class="form-control" id="pin_number" placeholder="Your Pin Number" autocomplete="off" maxlength="4" pattern="\d{4}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                <i class="clear-input">
-                                    <ion-icon name="close-circle"></ion-icon>
+                                <input type="password" name="pin_number" class="form-control" id="pin_number"
+                                    placeholder="Your Pin Number" autocomplete="off" maxlength="4" pattern="\d{4}" inputmode="numeric"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
+                                <!-- Eye Icon -->
+                                <i class="toggle-password" onclick="togglePassword()" 
+                                style="position:absolute; right:10px; top:15px; cursor:pointer; color:#666;">
+                                    <ion-icon id="eyeIcon" name="eye-off-outline"></ion-icon>
                                 </i>
                             </div>
                         </div>
+
                     </div>
                 </div>
                <!--  <div class="form-links mt-2">
@@ -91,10 +97,10 @@
                         <button type="submit" class="btn btn-success-custom btn-block btn-lg w-100 " style="color: black !important;">Log in</button>
                     </div>
 
-                    <div class="col-12 mb-2 px-4">
-                       <span style="color: floralwhite;">----- OR -----</span><br/>
-                       <span style="color: floralwhite;">New User?</span><br/>
-                         <button id="register" class="btn btn-success-custom btn-block btn-lg w-100" style="color: black !important;">
+                    <div class="col-12 mb-2 px-4" style="text-align:center;">
+                        <span style="color: floralwhite;">----- OR -----</span><br/>
+                        <span style="color: floralwhite;">New User?</span><br/>
+                        <button id="register" type="button" class="btn btn-success-custom btn-block btn-lg w-100" style="color: black !important;">
                             Register Here 
                         </button>
                     </div>
@@ -153,6 +159,28 @@
         console.log("PWA was installed");
     });
     </script>
+
+    <script>
+        function togglePassword() {
+            const pinInput = document.getElementById("pin_number");
+            const eyeIcon = document.getElementById("eyeIcon");
+            if (pinInput.type === "password") {
+                pinInput.type = "text";
+                eyeIcon.setAttribute("name", "eye-outline");
+            } else {
+                pinInput.type = "password";
+                eyeIcon.setAttribute("name", "eye-off-outline");
+            }
+        }
+    </script>
+
+    <script>
+        document.getElementById("register").addEventListener("click", function() {
+            window.location.href = "{% url 'register' %}";
+        });
+    </script>
+
+
 </body>
 
 </html>

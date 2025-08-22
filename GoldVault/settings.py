@@ -126,15 +126,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# STATIC_URL = '/static/'
-STATIC_URL = 'GoldVault/static/'
+STATIC_URL = '/static/'
+# STATIC_URL = 'GoldVault/static/'
 
-# MEDIA_URL = 'images/'
-MEDIA_URL = 'GoldVault/images/'
+MEDIA_URL = 'images/'
+# MEDIA_URL = 'GoldVault/images/'
 
 STATICFILES_DIRS = [
-    # BASE_DIR / 'static'
-    BASE_DIR / 'GoldVault/static'
+    BASE_DIR / 'static'
+    # BASE_DIR / 'GoldVault/static'
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'images'

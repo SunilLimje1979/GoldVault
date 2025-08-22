@@ -11,7 +11,8 @@
     <meta name="theme-color" content="#000000">
     <title>Gold Vault</title>
     <meta name="description" content="Gold Vault HTML Mobile Template">
-    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <meta name="keywords"
+        content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/icon/192x192.png' %}">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
@@ -26,89 +27,90 @@
     </div>
     <!-- * loader -->
 
-    <!-- App Header -->
-    <div class="appHeader no-border transparent position-absolute">
-        <div class="left">
-            <a href="#" class="headerButton goBack">
-                <ion-icon name="chevron-back-outline"></ion-icon>
-            </a>
-        </div>
-        <div class="pageTitle"></div>
-        <div class="right">
-            <a href="app-login.html" class="headerButton">
-                Login
-            </a>
-        </div>
-    </div>
-    <!-- * App Header -->
-
     <!-- App Capsule -->
     <div id="appCapsule">
 
-        <div class="section mt-2 text-center">
+        <div class="section mt-1 text-center">
             <img src="{% static 'assets/img/wallet_6592084.png' %}" alt="Logo" class="logo" width="80" height="80">
+            <h1 style="color:#ffffff; margin-top:5px; font-size:28px; font-weight:bold;">
+                Gold Vault
+            </h1>
         </div>
-        <div class="section mb-5 p-2">
-            <form method="post" action="{% url 'register' %}">
+
+        <div class="section mb-4 p-2">
+
+            <form method="post" action="{% url 'register' %}" onsubmit="return validateForm()">
                 {% csrf_token %}
                 <div class="card">
                     <div class="card-body">
+
+                        <!-- Full Name -->
                         <div class="form-group basic animated">
                             <div class="input-wrapper">
                                 <label class="label" for="name">Full Name</label>
-                                <input type="full_name" class="form-control" id="name" name="full_name" placeholder="Your Name">
+                                <input type="text" class="form-control" id="name" name="full_name" placeholder="Your Name" required>
                                 <i class="clear-input">
                                     <ion-icon name="close-circle"></ion-icon>
                                 </i>
                             </div>
                         </div>
+
+                        <!-- Mobile Number -->
                         <div class="form-group basic animated">
                             <div class="input-wrapper">
                                 <label class="label" for="mobile_number">Mobile Number</label>
-                                <input type="mobile_number" class="form-control" id="mobile_number" name="mobile_number" placeholder="Your Mobile" minlength="10" maxlength="10" pattern="\d{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <input type="text" class="form-control" id="mobile_number" name="mobile_number"
+                                    placeholder="Your Mobile" minlength="10" maxlength="10" pattern="\d{10}"
+                                    inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 <i class="clear-input">
                                     <ion-icon name="close-circle"></ion-icon>
                                 </i>
                             </div>
                         </div>
 
+                        <!-- PIN -->
                         <div class="form-group basic animated">
                             <div class="input-wrapper">
                                 <label class="label" for="pin">Pin</label>
-                                <input type="pin" class="form-control" id="pin" name="pin_number" autocomplete="off"
-                                    placeholder="Your pin" maxlength="4" pattern="\d{4}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                <i class="clear-input">
-                                    <ion-icon name="close-circle"></ion-icon>
-                                </i>
-                            </div>
-                        </div>
-                        <div class="form-group basic animated">
-                            <div class="input-wrapper">
-                                <label class="label" for="pin2">Confirm Pin</label>
-                                <input type="pin" class="form-control" id="pin2" name="pin2" autocomplete="off"
-                                    placeholder="Type pin again" maxlength="4" pattern="\d{4}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <input type="password" class="form-control" id="pin" name="pin_number" autocomplete="off"
+                                    placeholder="Your Pin" maxlength="4" pattern="\d{4}" inputmode="numeric"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 <i class="clear-input">
                                     <ion-icon name="close-circle"></ion-icon>
                                 </i>
                             </div>
                         </div>
 
-                        <div class="custom-control custom-checkbox mt-2 mb-1">
+                        <!-- Confirm PIN -->
+                        <div class="form-group basic animated">
+                            <div class="input-wrapper">
+                                <label class="label" for="pin2">Confirm Pin</label>
+                                <input type="password" class="form-control" id="pin2" name="pin2" autocomplete="off"
+                                    placeholder="Confirm Pin" maxlength="4" pattern="\d{4}" inputmode="numeric"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                <i class="clear-input">
+                                    <ion-icon name="close-circle"></ion-icon>
+                                </i>
+                            </div>
+                        </div>
+
+                        <!-- Terms Checkbox -->
+                        <div class="custom-control custom-checkbox mt-2 mb-3">
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="customCheckb1">
+                                <input type="checkbox" class="form-check-input" id="customCheckb1" required>
                                 <label class="form-check-label" for="customCheckb1">
-                                    I agree <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and
-                                        conditions</a>
+                                    I agree <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
                                 </label>
                             </div>
                         </div>
 
+                        <!-- Register Button -->
+                        <div class=" transparent">
+                            <button type="submit" class="btn btn-success btn-block btn-lg">Register</button>
+                        </div>
+
                     </div>
                 </div>
-                <div class="form-button-group transparent">
-                    <button type="submit" class="btn btn-success btn-block btn-lg">Register</button>
-                </div>
-
             </form>
         </div>
 
@@ -128,24 +130,15 @@
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc fermentum, urna eget finibus
                         fermentum, velit metus maximus erat, nec sodales elit justo vitae sapien. Sed fermentum
-                        varius erat, et dictum lorem. Cras pulvinar vestibulum purus sed hendrerit. Praesent et
-                        auctor dolor. Ut sed ultrices justo. Fusce tortor erat, scelerisque sit amet diam rhoncus,
-                        cursus dictum lorem. Ut vitae arcu egestas, congue nulla at, gravida purus.
+                        varius erat, et dictum lorem.
+                    </p>
+                    <p>
+                        Cras pulvinar vestibulum purus sed hendrerit. Praesent et auctor dolor. Ut sed ultrices justo.
+                        Fusce tortor erat, scelerisque sit amet diam rhoncus, cursus dictum lorem.
                     </p>
                     <p>
                         Donec in justo urna. Fusce pretium quam sed viverra blandit. Vivamus a facilisis lectus.
-                        Nunc non aliquet nulla. Aenean arcu metus, dictum tincidunt lacinia quis, efficitur vitae
-                        dui. Integer id nisi sit amet leo rutrum placerat in ac tortor. Duis sed fermentum mi, ut
-                        vulputate ligula.
-                    </p>
-                    <p>
-                        Vivamus eget sodales elit, cursus scelerisque leo. Suspendisse lorem leo, sollicitudin
-                        egestas interdum sit amet, sollicitudin tristique ex. Class aptent taciti sociosqu ad litora
-                        torquent per conubia nostra, per inceptos himenaeos. Phasellus id ultricies eros. Praesent
-                        vulputate interdum dapibus. Duis varius faucibus metus, eget sagittis purus consectetur in.
-                        Praesent fringilla tristique sapien, et maximus tellus dapibus a. Quisque nec magna dapibus
-                        sapien iaculis consectetur. Fusce in vehicula arcu. Aliquam erat volutpat. Class aptent
-                        taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
+                        Nunc non aliquet nulla. Aenean arcu metus, dictum tincidunt lacinia quis, efficitur vitae dui.
                     </p>
                 </div>
             </div>
@@ -164,6 +157,18 @@
     <!-- Base Js File -->
     <script src="{% static 'assets/js/base.js' %}"></script>
 
+    <!-- Custom Validation -->
+    <script>
+        function validateForm() {
+            const pin = document.getElementById("pin").value;
+            const pin2 = document.getElementById("pin2").value;
+            if (pin !== pin2) {
+                alert("Pin and Confirm Pin do not match!");
+                return false;
+            }
+            return true;
+        }
+    </script>
 
 </body>
 

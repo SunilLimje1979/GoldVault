@@ -42,6 +42,8 @@ def login_view(request):
                 data = response.json()
                 if data.get("message_code") == 1000:
                     user = data["message_data"][0]
+                    request.session['user']=user
+                    print(user)
                     user_status = int(user.get("UserStatus", -1))
                     user_code = user.get("UserCode")
 
@@ -51,11 +53,11 @@ def login_view(request):
 
                 if user_status == 1:
                     resp = redirect("dashboard/")  
-                    resp.set_cookie("user_code", user_code)
+                    # resp.set_cookie("user_code", user_code)
                     return resp
                 elif user_status == 0:
                     resp = redirect("dashboard1/")
-                    resp.set_cookie("user_code", user_code)
+                    # resp.set_cookie("user_code", user_code)
                     return resp
         except Exception as e:
             print("Login Exception:", e)
@@ -63,8 +65,10 @@ def login_view(request):
     return render(request, "base.html")
 
 def dashboard_view(request):
-    user_code = request.COOKIES.get("user_code")
-    print("DEBUG: UserCode from cookie =>", user_code)
+    # user_code = request.COOKIES.get("user_code")
+    user_code = request.session.get('user').get('UserCode')
+    print(user_code)
+    # print("DEBUG: UserCode from cookie =>", user_code)
 
     api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
     payload = {
@@ -108,12 +112,34 @@ def dashboard_view(request):
     except Exception as e:
         print("Dashboard1 API Exception:", e)
 
-    return render(request, "dashboard.html", {"stats": stats, "user": user})
+    rate_api_url = "https://www.gyaagl.app/goldvault_api/getrate"
+    rate_payload = {
+        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    }
+    try:
+        rate_response = requests.post(rate_api_url, json=rate_payload, headers=headers, timeout=10)
+        print("DEBUG: Rate API response:", rate_response.text)
+
+        if rate_response.status_code == 200:
+            rate_data = rate_response.json()
+            if rate_data.get("message_code") == 1000 and rate_data.get("message_data"):
+                sell_rate = rate_data["message_data"][0].get("SellRate")
+    except Exception as e:
+        print("Dashboard Rate API Exception:", e)
+
+    return render(request, "dashboard.html", {
+        "stats": stats,
+        "user": user,
+        "sell_rate": sell_rate
+    })
+    # return render(request, "dashboard.html", {"stats": stats, "user": user})
 
 
 def dashboard1_view(request):
-    user_code = request.COOKIES.get("user_code")
-    print("DEBUG: UserCode from cookie =>", user_code)
+    user_code = request.session.get('user').get('UserCode')
+    print(user_code)
+    # user_code = request.COOKIES.get("user_code")
+    # print("DEBUG: UserCode from cookie =>", user_code)
 
     api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
     payload = {
@@ -153,13 +179,30 @@ def dashboard1_view(request):
             print("HTTP error:", response.status_code)
     except Exception as e:
         print("Dashboard1 API Exception:", e)
+    rate_api_url = "https://www.gyaagl.app/goldvault_api/getrate"
+    rate_payload = {
+        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    }
+    try:
+        rate_response = requests.post(rate_api_url, json=rate_payload, headers=headers, timeout=10)
+        print("DEBUG: Rate API response:", rate_response.text)
 
-    return render(request, "dashboard1.html", {"stats": stats})
+        if rate_response.status_code == 200:
+            rate_data = rate_response.json()
+            if rate_data.get("message_code") == 1000 and rate_data.get("message_data"):
+                sell_rate = rate_data["message_data"][0].get("SellRate")
+    except Exception as e:
+        print("Dashboard Rate API Exception:", e)
 
-def logout_view(request):
+    return render(request, "dashboard1.html", {
+        "stats": stats,
+        "sell_rate": sell_rate
+    })
+    # return render(request, "dashboard1.html", {"stats": stats})
+
+def logout_view(request): 
     request.session.flush()  
     return redirect('login')
-
 def register(request):
     if request.method == 'POST':
         mobile = request.POST.get('mobile_number')
@@ -233,6 +276,47 @@ def update_sell_rate(request):
             return render(request, "dashboard.html", {"error": str(e)})
 
     return render(request, "dashboard.html")
+def get_rate(request):
+    api_url = "https://www.gyaagl.app/goldvault_api/getrate"
+
+    payload = {
+        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    }
+
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        print("Status:", response.status_code)
+        print("Response:", response.text)
+
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("message_code") == 1000 and data.get("message_data"):
+                sell_rate = data["message_data"][0].get("SellRate")
+                print(sell_rate)
+                return render(request, "dashboard.html", {
+                    "sell_rate": sell_rate,
+                    "data": data
+                })
+            else:
+                return render(request, "dashboard.html", {
+                    "error": data.get("message_text", "Unknown error")
+                })
+        else:
+            return render(request, "dashboard.html", {
+                "error": f"HTTP {response.status_code}"
+            })
+
+    except Exception as e:
+        print("Exception:", e)
+        return render(request, "dashboard.html", {"error": str(e)})
 
 
 def booking(request):
@@ -278,7 +362,9 @@ def booking(request):
     return redirect('/dashboard1/')
 
 def get_balance(request):
-    user_code = request.COOKIES.get("user_code")
+    # user_code = request.COOKIES.get("user_code")
+    user_code = request.session.get('user').get('UserCode')
+    print(user_code)
     api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
 
     payload = {
@@ -319,7 +405,10 @@ def get_balance(request):
 
 def send_money(request):
     if request.method == 'POST':
-        user_code = request.COOKIES.get("user_code")
+        # user_code = request.COOKIES.get("user_code")
+        user_code = request.session.get('user').get('UserCode')
+        print(user_code)
+        
         withdraw_amount = request.POST.get('withdraw_amount')
         withdraw_weight = request.POST.get('withdraw_weight')        
         api_url = 'https://www.gyaagl.app/goldvault_api/withdrawlrequest'  
@@ -352,8 +441,12 @@ def send_money(request):
             print("Exception:", e)
             return render(request, "dashboard1.html", {"error": str(e)})
     return render(request, "dashboard1.html")
+
 def get_transactions(request):
-    user_code = request.COOKIES.get("user_code")
+    # user_code = request.COOKIES.get("user_code")
+    user_code = request.session.get('user').get('UserCode')
+    print(user_code)
+    
     print("USERCODE:", user_code)
     api_url = "https://www.gyaagl.app/goldvault_api/gettransactions"  # <-- replace with actual endpoint
     payload = {
@@ -382,73 +475,70 @@ def get_transactions(request):
     except Exception as e:
         data = {"error": str(e)}
     return JsonResponse(data)
-import requests
-from django.shortcuts import render
-from django.http import JsonResponse
+
 
 def member_list(request):
-    if request.method == "POST":
-        api_url = "https://www.gyaagl.app/goldvault_api/getmembers"
-        payload = {
-            "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
-        }
-        headers = {
-            "Accept": "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-            "Origin": "https://www.gyaagl.app",
-            "Referer": "https://www.gyaagl.app/",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-        try:
-            response = requests.post(api_url, json=payload, headers=headers, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("message_code") == 1000:
-                    return JsonResponse({"status": "success", "members": data.get("message_data")})
-                else:
-                    return JsonResponse({"status": "error", "message": data.get("message_text")})
-            else:
-                return JsonResponse({"status": "error", "message": f"HTTP {response.status_code}"})
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)})
-    return render(request, "dashboard1.html")
+    api_url = "https://www.gyaagl.app/goldvault_api/getmembers"
+    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        data = response.json() if response.status_code == 200 else {}
+    except Exception as e:
+        data = {"message_code": 0, "message_text": str(e), "message_data": []}
+
+    members = data.get("message_data", [])
+
+    if request.method == "GET":
+        return render(request, "member_list.html", {"members": members})
+
+    if data.get("message_code") == 1000:
+        return JsonResponse({"status": "success", "members": members})
+    return JsonResponse({"status": "error", "message": data.get("message_text")})
 
 def withdrawal_list(request):
-    if request.method == "POST":
-        api_url = "https://www.gyaagl.app/goldvault_api/getwithdrawls"
-        payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
-        headers = {
+    api_url = "https://www.gyaagl.app/goldvault_api/getwithdrawls"
+    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
+    headers = {
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json",
             "Origin": "https://www.gyaagl.app",
             "Referer": "https://www.gyaagl.app/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }
-        try:
-            response = requests.post(api_url, json=payload, headers=headers, timeout=10)
-            response_text = response.text.strip()
-            first_brace = response_text.find('{')
-            last_brace = response_text.rfind('}')
-            clean_json = response_text[first_brace:last_brace+1] if first_brace != -1 else '{}'
-            try:
-                data = json.loads(clean_json)
-            except json.JSONDecodeError:
-                return JsonResponse({"status": "error", "message": "Invalid JSON from API"})
-            if response.status_code == 200 and data.get("message_code") == 1000:
-                members = [
-                    {
-                        "name": m.get("UserFullName"),
-                        "mobile": m.get("UserMobileNo"),
-                        "product_rate": m.get("ProductDailyRate"),
-                        "withdraw_amount": m.get("WithdrawAmount"),
-                        "withdraw_weight": m.get("WithdrawWeight")
-                    }
-                    for m in data.get("message_data", [])
-                ]
-                return JsonResponse({"status": "success", "members": members})
-            else:
-                return JsonResponse({"status": "error", "message": data.get("message_text")})
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)})
 
-    return render(request, "dashboard.html")
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        response_text = response.text.strip()
+
+        # clean JSON
+        first_brace = response_text.find("{")
+        last_brace = response_text.rfind("}")
+        clean_json = response_text[first_brace:last_brace+1] if first_brace != -1 else "{}"
+        data = json.loads(clean_json)
+
+        if data.get("message_code") == 1000:
+            members = [
+                {
+                    "name": m.get("UserFullName"),
+                    "mobile": m.get("UserMobileNo"),
+                    "product_rate": m.get("ProductDailyRate"),
+                    "withdraw_amount": m.get("WithdrawAmount"),
+                    "withdraw_weight": m.get("WithdrawWeight"),
+                }
+                for m in data.get("message_data", [])
+            ]
+            return render(request, "withdrawl_list.html", {"members": members})
+        else:
+            return render(request, "withdrawl_list.html", {"error": data.get("message_text")})
+
+    except Exception as e:
+        return render(request, "withdrawl_list.html", {"error": str(e)})
