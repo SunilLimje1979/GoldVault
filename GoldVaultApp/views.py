@@ -159,6 +159,7 @@ def dashboard1_view(request):
 def logout_view(request):
     request.session.flush()  
     return redirect('login')
+
 def register(request):
     if request.method == 'POST':
         mobile = request.POST.get('mobile_number')

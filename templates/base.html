@@ -12,8 +12,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>Gold Vault</title>
-    <meta name="description" content="Gold Vault HTML Mobile Template">
-    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <meta name="description" content="Gold Vault">
+    <meta name="keywords" content="Gold, Investment, Saving, Small Investment" />
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/icon/192x192.png' %}">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
@@ -61,7 +61,7 @@
                         <div class="form-group basic animated">
                             <div class="input-wrapper">
                                 <label class="label" for="mobile">Mobile Number Number</label>
-                                <input type="text" name="mobile" class="form-control" id="mobile" placeholder="Your mobile number" minlength="10" maxlength="10" pattern="\d{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <input type="text" name="mobile" class="form-control" id="mobile" placeholder="Your Mobile No." minlength="10" maxlength="10" pattern="\d{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 <i class="clear-input">
                                     <ion-icon name="close-circle"></ion-icon>
                                 </i>
@@ -69,7 +69,7 @@
                         </div>
                         <div class="form-group basic animated">
                             <div class="input-wrapper">
-                                <label class="label" for="pin_number">Pin Number</label>
+                                <label class="label" for="pin_number">Login Pin Number</label>
                                 <input type="password" name="pin_number" class="form-control" id="pin_number" placeholder="Your Pin Number" autocomplete="off" maxlength="4" pattern="\d{4}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 <i class="clear-input">
                                     <ion-icon name="close-circle"></ion-icon>
@@ -78,17 +78,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-links mt-2">
+               <!--  <div class="form-links mt-2">
                     <div class="text-center">
                         <span style="color: floralwhite;">New User?</span> 
                         <a href="{% url 'register' %}">Register Now</a>
                     </div>
                         <a href="{% url 'forgot_password' %}">Forgot Password?</a>
                     </div>
-                </div>
+                </div> -->
                 <div class="row mt-3">
                     <div class="col-12 mb-2 px-4">
                         <button type="submit" class="btn btn-success-custom btn-block btn-lg w-100 " style="color: black !important;">Log in</button>
+                    </div>
+
+                    <div class="col-12 mb-2 px-4">
+                       <span style="color: floralwhite;">----- OR -----</span><br/>
+                       <span style="color: floralwhite;">New User?</span><br/>
+                         <button id="register" class="btn btn-success-custom btn-block btn-lg w-100" style="color: black !important;">
+                            Register Here 
+                        </button>
                     </div>
 
                     <div class="col-12 mb-2 px-4">
