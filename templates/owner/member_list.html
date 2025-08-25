@@ -1,0 +1,131 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Members</title>
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:Poppins,sans-serif;">Members</div>
+    <div class="right"></div>
+</div>
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <div class="section mt-2">
+            <!-- 🔎 Search Box -->
+            <input type="text" id="memberSearch" placeholder="Search by name or mobile..."
+                style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; margin-bottom:15px;">
+            <!-- <div class="transactions">
+                {% for m in members %}
+                 <a href="#" 
+                    style="text-decoration:none; display:block;">
+                    <div style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                                box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
+
+                        
+                        <div style="display:flex; align-items:center;">
+                            
+                            <img src="/static/assets/img/account.png" 
+                                alt="member" style="width:30px; height:30px; border-radius:50%; margin-right:12px;">
+
+                            
+                            <div>
+                                <div style="font-size:15px; font-weight:600; color:#333;">
+                                    {{ m.UserFullName }}
+                                </div>
+                                <div style="font-size:13px; color:#666;">
+                                    {{ m.UserMobileNo }}
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div style="font-size:13px; font-weight:bold; color:#424043;">
+                            {{ m.UserStatus }}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div> -->
+            <div class="transactions" id="memberList">
+                {% for m in members %}
+                <form action="{% url 'member_transection_list' %}" method="POST" style="margin:0;" class="member-card">
+                    {% csrf_token %}
+                    <input type="hidden" name="UserCode" value="{{ m.UserCode }}">
+                    <input type="hidden" name="UserFullName" value="{{ m.UserFullName }}">
+                    <input type="hidden" name="UserMobileNo" value="{{ m.UserMobileNo }}">
+                    <input type="hidden" name="Balance" value="{{ m.Balance }}">
+                    <!-- <input type="hidden" name="UserStatus" value="{{ m.UserStatus }}"> -->
+
+                    <button type="submit" 
+                        style="background:none; border:none; padding:0; text-align:left; width:100%; cursor:pointer;">
+                        <div style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                                    box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
+
+                            <!-- Left: avatar + details -->
+                            <div style="display:flex; align-items:center;">
+                                <img src="/static/assets/img/account.png" 
+                                    alt="member" style="width:30px; height:30px; border-radius:50%; margin-right:12px;">
+                                <div>
+                                    <div class="member-name" style="font-size:15px; font-weight:600; color:#333;">
+                                        {{ m.UserFullName }}
+                                    </div>
+                                    <div class="member-mobile" style="font-size:13px; color:#666;">
+                                        {{ m.UserMobileNo }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: status -->
+                            <div style="font-size:14px; font-weight:bold; color:#424043;">
+                                {{ m.Balance }} g
+                            </div>
+                        </div>
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+<!-- JS Search Filter -->
+<script>
+document.getElementById("memberSearch").addEventListener("keyup", function() {
+    let filter = this.value.toLowerCase();
+    let cards = document.querySelectorAll("#memberList .member-card");
+
+    cards.forEach(card => {
+        let name = card.querySelector(".member-name").textContent.toLowerCase();
+        let mobile = card.querySelector(".member-mobile").textContent.toLowerCase();
+
+        if (name.includes(filter) || mobile.includes(filter)) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -82,15 +82,16 @@
                 <!-- Wallet Footer -->
                 <div class="wallet-footer">
                     <div class="item">
-                        <a href="javascript:void(0);" id="load-transactions">
+                        <a href="{% url 'member_booking_list' %}" id="load-transactions">
                             <div class="icon-wrapper">
                                 <ion-icon name="arrow-forward-outline"></ion-icon>
                             </div>
-                            <strong>Transactions</strong>
+                            <!-- <strong>Transactions</strong> -->
+                            <strong>Bookings</strong>
                         </a>
                     </div>
                     <div class="item">
-                        <a href="#" id="withdraw-button">
+                        <a href="{% url 'member_withdrawl_list' %}" id="withdraw-button">
                             <div class="icon-wrapper">
                                 <ion-icon name="arrow-forward-outline"></ion-icon>
                             </div>
@@ -98,7 +99,7 @@
                         </a>
                     </div>
                     <div class="item">
-                        <a href="#" id="member-btn">
+                        <a href="{% url 'member_list' %}" id="member-btn">
                             <div class="icon-wrapper bg-danger">
                                 <ion-icon name="arrow-down-outline"></ion-icon>
                             </div>
@@ -139,7 +140,7 @@
                         <div class="action-sheet-content">
                             <form method="post" action="{% url 'update_sell_rate' %}">
                                 {% csrf_token %}
-                                <div class="form-group basic">
+                                <!-- <div class="form-group basic">
                                     <div class="input-wrapper">
                                         <label class="label" for="account1">Product</label>
                                         <select class="form-control custom-select" id="account1">
@@ -147,22 +148,29 @@
                                             <option value="gold">Gold</option>
                                         </select>
                                     </div>
-                                </div>
+                                </div> -->
 
                                 <div class="form-group basic">
-                                    <label class="label">Sell Rate</label>
+                                    <label class="label">Gold Rate</label>
                                     <div class="input-group mb-2">
                                         <span class="input-group-text">₹</span>
                                         <input type="text" name="sell_rate" class="form-control"
                                             placeholder="Enter an amount"
-                                            value="100"
+                                            value="{{sell_rate}}"
                                             min="0" max="999999.99" step="0.01"
                                             oninput="if(this.value.length > 9) this.value = this.value.slice(0,9);">
                                     </div>
                                 </div>
 
                                 <div class="form-group basic">
-                                    <button type="submit" class="btn btn-primary btn-block btn-lg">Update</button>
+                                    <!-- <button type="submit" class="btn btn-primary btn-block btn-lg" style="background-color: #edc88f !important;border-color:#edc88f !important;color: black !important;">Update</button> -->
+                                    <button type="submit" 
+                                            class="btn btn-primary btn-block btn-lg" 
+                                            style="background-color: #edc88f !important;border-color:#edc88f !important;color: black !important;"
+                                            onclick="this.disabled=true; this.innerText='Updating...'; this.form.submit();">
+                                        Update
+                                    </button>
+
                                 </div>
                             </form>
 
@@ -341,7 +349,7 @@
         <!-- * Exchange Action Sheet -->
 
         <!-- Stats -->
-        <div class="section">
+        <!-- <div class="section">
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="stat-box">
@@ -386,18 +394,91 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <!-- * Stats -->
 
         <!-- Transactions -->
-        <div class="section mt-4">
+        <!-- <div class="section mt-4">
             <div class="section-heading">
                 <h2 class="title">Transactions</h2>
                 <a href="javascript:void(0);" id="view-all" class="link">View All</a>
             </div>
             <div class="transactions" id="transaction-list">
             </div>
+        </div> -->
+        <!--Booking-->
+
+        <!-- Bookings Summary -->
+        <div class="section mt-2">
+            <!-- <div class="section-title">Bookings</div> -->
+            <div class="section-heading">
+                <h2 class="title">Bookings</h2>
+                <a href="{% url 'get_booking_list' %}" id="view-all" class="link" style="color:white; text-decoration:none;">View All</a>
+            </div>
+            <div class="card" style="padding:0px;">
+                <ul class="listview flush transparent no-line image-listview detailed-list mt-1 mb-1">
+                    {% for status, details in bookings.items %}
+                    <li>
+                        <a href="#" class="item">
+                            <div class="icon-box bg-primary">
+                                <!-- placeholder icon, you can change per status -->
+                                <ion-icon name="cube-outline"></ion-icon>
+                            </div>
+                            <div class="in">
+                                <div>
+                                    <strong>{{ status }}</strong>
+                                    <div class="text-small text-secondary">Count: {{ details.Count }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <strong>{{ details.Weight }} g</strong>
+                                    <div class="text-small">
+                                        ₹ {{ details.Amount }}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
+
+        <!-- Withdrawls Summary -->
+        <div class="section mt-2" style="padding: 0px 16px 4px !important;">
+            <!-- <div class="section-title">Withdrawls</div> -->
+            <div class="section-heading">
+                <h2 class="title">Withdrawls</h2>
+                <a href="{% url 'get_withdrawal_list' %}" id="view-all" class="link" style="color:white; text-decoration:none;">View All</a>
+            </div>
+            <div class="card" style="padding:0px;">
+                <ul class="listview flush transparent no-line image-listview detailed-list mt-1 mb-1">
+                    {% for status, details in withdrawls.items %}
+                    <li>
+                        <a href="#" class="item">
+                            <div class="icon-box bg-warning">
+                                <!-- placeholder icon -->
+                                <ion-icon name="cash-outline"></ion-icon>
+                            </div>
+                            <div class="in">
+                                <div>
+                                    <strong>{{ status }}</strong>
+                                    <div class="text-small text-secondary">Count: {{ details.Count }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <strong>{{ details.Weight }} g</strong>
+                                    <div class="text-small">
+                                        ₹ {{ details.Amount }}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+
        <div class="section mt-4" id="member-section" style="display:none;">
             <div class="section-heading d-flex justify-content-between align-items-center">
                 <h2 class="title">Member List</h2>
@@ -441,12 +522,12 @@
         <!-- Saving Goals -->
         
         <!-- app footer -->
-        <div class="appFooter">
+        <!-- <div class="appFooter">
             <div class="footer-title">
-                
+
             </div>
            
-        </div>
+        </div> -->
         <!-- * app footer -->
 
     </div>
@@ -468,8 +549,8 @@
                             <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged  w36">
                         </div>
                         <div class="in">
-                            <strong>{{ user.UserFullName  }}</strong>
-                            <div class="text-muted">{{ user.UserMobileNo }}</div>
+                            <strong>{{ request.session.user.UserFullName  }}</strong>
+                            <div class="text-muted">{{request.session.user.UserMobileNo }}</div>
                         </div>
                         <a href="#" class="btn btn-link btn-icon sidebar-close" data-bs-dismiss="modal">
                             <ion-icon name="close-outline"></ion-icon>
@@ -495,15 +576,16 @@
                                 Deposit
                             </div>
                         </a> -->
-                        <a href="index.html" class="action-button">
+                        <a href="{% url 'member_booking_list' %}" class="action-button">
                             <div class="in">
                                 <div class="iconbox">
                                     <ion-icon name="arrow-down-outline"></ion-icon>
                                 </div>
-                                Transaction
+                                <!-- Transaction -->
+                                Bookings
                             </div>
                         </a>
-                        <a href="index.html" class="action-button">
+                        <a href="{% url 'member_withdrawl_list' %}" class="action-button">
                             <div class="in">
                                 <div class="iconbox">
                                     <ion-icon name="arrow-forward-outline"></ion-icon>
@@ -511,7 +593,7 @@
                                 Withdraws
                             </div>
                         </a>
-                        <a href="app-cards.html" class="action-button">
+                        <a href="{% url 'member_list' %}" class="action-button">
                             <div class="in">
                                 <div class="iconbox">
                                     <ion-icon name="card-outline"></ion-icon>
@@ -729,7 +811,8 @@
 
     <!-- ========= JS Files =========  -->
     <!-- Bootstrap -->
-    <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+    <!-- <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Ionicons -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
     <!-- Splide -->
@@ -737,7 +820,7 @@
     <!-- Base Js File -->
     <script src="{% static 'assets/js/base.js' %}"></script>
 
-    <script>
+    <!-- <script>
         document.addEventListener("DOMContentLoaded", function() {
             const apiUrl = "https://www.gyaagl.app/goldvault_api/getbalances"; 
             const payload = {
@@ -870,7 +953,39 @@
         alert("Something went wrong!");
     });
 });
+    </script> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            var msg = "{{ message|escapejs }}";
+            var tag = "{{ message.tags }}";
+
+            {% comment %} console.log(msg);
+            console.log(tag); {% endcomment %}
+            var alertType = "info";
+            var alertTitle = "Info"; 
+
+            if (tag.includes("success")) {
+                alertType = "success";
+                alertTitle = "Success!";
+            } else if (tag.includes("danger")) {
+                alertType = "error";
+                alertTitle = "Error!";
+            }
+
+            swal({
+                title: alertTitle,
+                text: msg,
+                type: alertType,
+                //timer: 5000,
+                showConfirmButton: true
+            });
+        {% endfor %}
     </script>
+{% endif %}
 
 </body>
 

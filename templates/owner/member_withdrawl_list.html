@@ -1,0 +1,266 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Withdrawals</title>
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:Poppins,sans-serif;">Pending Withdrawals</div>
+    <div class="right"></div>
+</div>
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <div class="section mt-2">
+            <!-- <div class="section-title" style="color: white;">Withdrawal List</div> -->
+            <!-- <div class="transactions">
+                {% for m in members %}
+                <div style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                            box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
+
+                    
+                    <div style="display:flex; align-items:center;">
+                        
+                        <img src="/static/assets/img/minus.png" 
+                            alt="member" style="width:30px; height:30px; border-radius:50%; margin-right:12px;">
+
+                        
+                        <div>
+                            <div style="font-size:15px; font-weight:600; color:#333;">
+                                {{ m.UserFullName }}
+                            </div>
+                            <div style="font-size:13px; color:#666;">
+                                {{ m.UserMobileNo }}
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div style="font-size:14px; font-weight:bold; color:#424043;">
+                        {{ m.WithdrawWeight }} g
+                    </div>
+                </div>
+                {% endfor %}
+            </div> -->
+            <div class="transactions">
+                {% for m in members %}
+                <div class="withdraw-card" 
+                     data-usercode="{{m.UserCode}}"
+                     data-id="{{ m.WithdrawlId }}"
+                     data-name="{{ m.UserFullName }}"
+                     data-mobile="{{ m.UserMobileNo }}"
+                     data-date="{{ m.RequestDateTime }}"
+                     data-weight="{{ m.WithdrawWeight }}"
+                     data-status="{{ m.OrderStatus }}"
+                     style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                            box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+
+                    <!-- Left: avatar + details -->
+                    <div style="display:flex; align-items:center;">
+                        <img src="/static/assets/img/minus.png" 
+                            alt="member" style="width:30px; height:30px; border-radius:50%; margin-right:12px;">
+                        <div>
+                            <div style="font-size:15px; font-weight:600; color:#333;">
+                                {{ m.UserFullName }}
+                            </div>
+                            <div style="font-size:13px; color:#666;">
+                                {{ m.UserMobileNo }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: withdrawal weight -->
+                    <div style="font-size:14px; font-weight:bold; color:#424043;">
+                        {{ m.WithdrawWeight }} g
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Modal -->
+<div id="withdrawModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+     background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9999;">
+    <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#000; font-weight:bold;">
+        <h3 style="margin-bottom:15px;">Withdrawal Request</h3>
+        <p><strong>Name:</strong> <span id="modalName"></span></p>
+        <p><strong>Mobile:</strong> <span id="modalMobile"></span></p>
+        <p><strong>Request Date:</strong> <span id="modalDate"></span></p>
+        <p><strong>Weight:</strong> <span id="modalWeight"></span> g</p>
+        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+
+        <!-- Hidden ID -->
+        <input type="hidden" id="modalWithdrawId">
+        <input type="hidden" id="usercode">
+
+        <!-- Action Buttons -->
+        <div id="actionButtons" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;">
+            <button id="approveBtn" style="flex:1; padding:10px; background:#28a745; color:#fff; border:none; border-radius:8px;">Approve</button>
+            <button id="rejectBtn" style="flex:1; padding:10px; background:#dc3545; color:#fff; border:none; border-radius:8px;">Reject</button>
+            <button id="okBtn" style="flex:1; padding:10px; background:#007bff; color:#fff; border:none; border-radius:8px; display:none;">Ok</button>
+        </div>
+
+        <button id="closeModal" style="margin-top:15px; width:100%; padding:10px; background:#6c757d; color:#fff; border:none; border-radius:8px;">Close</button>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// $(document).ready(function(){
+//     // Open modal on card click
+//     $(".withdraw-card").on("click", function(){
+//         $("#modalWithdrawId").val($(this).data("id"));
+//         $("#modalName").text($(this).data("name"));
+//         $("#modalMobile").text($(this).data("mobile"));
+//         $("#modalDate").text($(this).data("date"));
+//         $("#modalWeight").text($(this).data("weight"));
+//         $("#modalStatus").text($(this).data("status") == "0" ? "Pending" : $(this).data("status"));
+
+//         $("#withdrawModal").css("display","flex");
+//     });
+
+//     // Close modal
+//     $("#closeModal").on("click", function(){
+//         $("#withdrawModal").hide();
+//     });
+
+//     // Approve/Reject via AJAX
+//     $("#approveBtn, #rejectBtn").on("click", function(){
+//         var action = $(this).attr("id") === "approveBtn" ? "approve" : "reject";
+//         var withdrawId = $("#modalWithdrawId").val();
+
+//         $.ajax({
+//             url: "{% url 'update_withdraw_status' %}",  // You’ll need this Django URL/view
+//             type: "POST",
+//             data: {
+//                 "withdraw_id": withdrawId,
+//                 "action": action,
+//                 "csrfmiddlewaretoken": "{{ csrf_token }}"
+//             },
+//             success: function(resp){
+//                 if(resp.success){
+//                     alert("Successfully updated!");
+//                     location.reload();
+//                 } else {
+//                     alert("Error: " + resp.message);
+//                     location.reload();
+//                 }
+//             },
+//             error: function(){
+//                 alert("Something went wrong.");
+//                 location.reload();
+//             }
+//         });
+//     });
+// });
+
+$(document).ready(function(){
+    // Open modal on card click
+    $(".withdraw-card").on("click", function(){
+        var status = $(this).data("status");
+
+        $("#modalWithdrawId").val($(this).data("id"));
+        $("#usercode").val($(this).data("usercode"));
+        $("#modalName").text($(this).data("name"));
+        $("#modalMobile").text($(this).data("mobile"));
+        $("#modalDate").text($(this).data("date"));
+        $("#modalWeight").text($(this).data("weight"));
+
+        // Set status text
+        let statusText = "Pending";
+        if(status == "1") statusText = "Approved";
+        else if(status == "2") statusText = "Rejected";
+        else if(status == "3") statusText = "Delivered";
+        $("#modalStatus").text(statusText);
+
+        // Reset buttons
+        $("#approveBtn, #rejectBtn, #okBtn, #closeModal").hide();
+
+        // Show buttons based on status
+        if(status == "0"){ 
+            // INITIATED -> Approve + Reject
+            $("#approveBtn").text("Approve").show();
+            $("#rejectBtn").text("Reject").show();
+            $("#closeModal").show();
+        }
+        else if(status == "1"){ 
+            // APPROVED -> Deliver + Reject
+            $("#approveBtn").text("Deliver").show();
+            $("#rejectBtn").text("Reject").show();
+            $("#closeModal").show();
+        }
+        else if(status == "2" || status == "3"){ 
+            // REJECTED or DELIVERED -> Ok only
+            $("#okBtn").show();
+        }
+
+        $("#withdrawModal").css("display","flex");
+    });
+
+    // Close modal
+    $("#closeModal, #okBtn").on("click", function(){
+        $("#withdrawModal").hide();
+    });
+
+    // Approve/Reject/Deliver via AJAX
+    $("#approveBtn, #rejectBtn").on("click", function(){
+        document.getElementById('loader').style.display = 'flex';
+        var action = $(this).text().toLowerCase(); // approve / reject / deliver
+        var withdrawId = $("#modalWithdrawId").val();
+        var usercode = $("#usercode").val();
+
+        $.ajax({
+            url: "{% url 'update_withdraw_status' %}",
+            type: "POST",
+            data: {
+                "withdraw_id": withdrawId,
+                "action": action,
+                "usercode":usercode,
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            },
+            success: function(resp){
+                if(resp.success){
+                    alert(resp.message);
+                    location.reload();
+                } else {
+                    alert("Error: " + resp.message);
+                    location.reload();
+                }
+            },
+            error: function(){
+                alert("Something went wrong.");
+                location.reload();
+            }
+        });
+    });
+});
+
+</script>
+</body>
+</html>

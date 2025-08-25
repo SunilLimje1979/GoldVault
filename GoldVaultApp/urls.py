@@ -16,7 +16,15 @@ urlpatterns = [
     path('send_money/', views.send_money, name='send_money'),
     path("get-transactions/", views.get_transactions, name="get_transactions"),
     path("booking/", views.booking, name="booking"),
-    path('member-list/', views.member_list, name='member_list'),
-    path('withdrawl-list/', views.withdrawal_list, name='withdrawl_list'),
+    path('member_list/', views.member_list, name='member_list'),
+    path('withdrawl_list/', views.withdrawal_list, name='withdrawl_list'),
+    # path('member_transection_list/<str:user_code>/' , views.member_transection_list , name='member_transection_list'),
+    path('member_transection_list/' , views.member_transection_list , name='member_transection_list'),
+    path('member_withdrawl_list/', views.member_withdrawl_list , name='member_withdrawl_list'),
+    path('update_withdraw_status/', views.update_withdraw_status , name='update_withdraw_status'),
+    path('get_booking_list/' , views.get_booking_list , name='get_booking_list'),
+    path('update_booking_status/' , views.update_booking_status , name='update_booking_status'),
+    path('get_withdrawal_list/', views.get_withdrawal_list,name='get_withdrawal_list'),
+    path('member_booking_list/' , views.member_booking_list , name='member_booking_list'),
 
 ]
