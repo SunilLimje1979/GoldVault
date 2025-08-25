@@ -1093,7 +1093,7 @@ def member_booking_list(request):
 
     try:
         response = requests.post(api_url, json=payload, headers=headers, timeout=10)
-        #print("DEBUG: Booking order API response:", response.text)
+        print("DEBUG: Booking order API response:", response.text)
 
         
         data = response.json()
@@ -1105,7 +1105,7 @@ def member_booking_list(request):
             else:
                 error = data.get("message_text", "No Bookings order found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"API Error: {data.get("message_text")}"
 
     except Exception as e:
         error = f"booking order API Exception: {str(e)}"
