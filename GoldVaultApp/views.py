@@ -83,7 +83,7 @@ def login_view(request):
                 if data.get("message_code") == 1000:
                     user = data["message_data"][0]
                     request.session['user'] = user
-                    messages.success(request, data.get("message_text", "Login successful."))
+                    # messages.success(request, data.get("message_text", "Login successful."))
 
                     user_status = int(user.get("UserType", -1))
                     user_code = user.get("UserCode")
@@ -627,7 +627,7 @@ def change_pin(request):
 
         return redirect("change_pin")  # redirect back to same page
 
-    return render(request, "user/change_pin.html")
+    return render(request, "User/change_pin.html")
 
 
 ######################################## Update Nominee ########################################
@@ -723,7 +723,7 @@ def update_nominee(request):
         print("API Error:", e)
         messages.error(request, "Unable to connect to server. Please try again later.")
 
-    return render(request, "user/update_nominee.html", {"nominees": nominee_data})
+    return render(request, "User/update_nominee.html", {"nominees": nominee_data})
 ############################################# Send Money ####################################################
 @member_required
 def send_money(request):
@@ -1836,7 +1836,7 @@ def member_booking_list(request):
             else:
                 error = data.get("message_text", "No Bookings order found.")
         else:
-            error = f"API Error: {data.get("message_text")}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"booking order API Exception: {str(e)}"
