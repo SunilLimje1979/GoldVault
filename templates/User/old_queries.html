@@ -1,0 +1,131 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Old Queries</title>
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 500;">
+        Old Queries
+    </div>
+</div>
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <div class="section mt-2">
+    {% if queries %}
+        {% for q in queries %}
+            <div style="background:#fff; border-radius:10px; padding:10px; margin-bottom:8px;
+                box-shadow:0 1px 4px rgba(0,0,0,0.06); font-family: 'Poppins', sans-serif;">
+
+                <!-- Subject -->
+                <div style="font-size:13px; font-weight:600; color:#175754; margin-bottom:2px;">
+                    {{ q.QuerySubject }}
+                </div>
+
+                <!-- Two Columns: User vs Support -->
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:4px;">
+                    
+                    <!-- Left: User -->
+                    <div style="flex:1; text-align:left;">
+                        <div style="font-size:12px; font-weight:600; color:#2c3e50;">{{ user_name }}</div>
+                        <div style="font-size:12px; color:#333; margin-top:2px;">
+                            {{ q.QueryText }}
+                        </div>
+                    </div>
+
+                    <!-- Right: Support -->
+                    <div style="flex:1; text-align:right;">
+                        <div style="font-size:12px; font-weight:600; color:#2980b9;">Support</div>
+                        {% if q.QueryUpdateText %}
+                            <div style="font-size:12px; color:#27ae60; margin-top:2px;">
+                                {{ q.QueryUpdateText }}
+                            </div>
+                        {% else %}
+                            <div style="font-size:12px; color:#e67e22; margin-top:2px;">
+                                {% comment %} Pending response {% endcomment %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#7f8c8d; margin-top:3px;">
+                    <div>{{ q.CreatedOn }}</div>
+                    <div>{{ q.LastUpdatedOn }}</div>
+                </div>
+
+                <!-- Status -->
+                <div style="text-align:center; margin-top:4px; font-size:12px; font-weight:600; 
+                            color:{% if q.QueryStatus == '1' %}#27ae60{% else %}#e67e22{% endif %};">
+                    Status: 
+                    {% if q.QueryStatus == "1" %}
+                        Resolved
+                    {% else %}
+                        Pending
+                    {% endif %}
+                </div>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center">No old queries found.</p>
+    {% endif %}
+</div>
+
+    {% endif %}
+
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                var msg = "{{ message|escapejs }}";
+                var tag = "{{ message.tags }}";
+
+                {% comment %} console.log(msg);
+                console.log(tag); {% endcomment %}
+                var alertType = "info";
+                var alertTitle = "Info"; 
+
+                if (tag.includes("success")) {
+                    alertType = "success";
+                    alertTitle = "Success!";
+                } else if (tag.includes("danger")) {
+                    alertType = "error";
+                    alertTitle = "Error!";
+                }
+
+                swal({
+                    title: alertTitle,
+                    text: msg,
+                    type: alertType,
+                    //timer: 5000,
+                    showConfirmButton: true
+                });
+            {% endfor %}
+        </script>
+    {% endif %}
+</body>
+</html>

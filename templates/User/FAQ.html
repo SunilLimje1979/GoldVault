@@ -1,0 +1,54 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000ff">
+    <meta charset="utf-8">
+    <title>{{ faq_title}}</title>
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body class="bg-white">
+
+<!-- Header -->
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 500;">
+       {{ faq_title}}
+    </div>
+</div>
+<!-- * Header -->
+
+<!-- App Capsule -->
+<div id="appCapsule" class="full-height">
+    <div class="section mt-2 mb-2">
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% else %}
+            {% comment %} <h3 style="font-family: 'Poppins', sans-serif; text-align: center; color: white; margin-top: 10px; margin-bottom: 10px;">
+                {{ faq_title }}
+            </h3> {% endcomment %}
+            {% comment %} <small class="text-muted">Last Updated: {{ last_updated }}</small> {% endcomment %}
+            <div class="mt-1" style="font-family: 'Poppins', sans-serif;">
+                {{ faq_html|safe }}
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- JS -->
+<script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/base.js' %}"></script>
+</body>
+</html>

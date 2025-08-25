@@ -1,0 +1,96 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Transactions</title>
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 500;">
+        Transactions 
+    </div>
+    {% comment %} <div class="right">
+        <a href=" " class="headerButton">
+            <ion-icon class="icon" name="notifications-outline"></ion-icon>
+            <span class="badge badge-danger">{{ notification_count }}</span> 
+        </a>
+    </div> {% endcomment %}
+</div>
+
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <!-- Transactions -->
+        <div class="section mt-2">
+            <div class="transactions" id="transaction-list">
+                {% if transactions %}
+                    {% for txn in transactions %}
+                        <a href="{% url 'details_transection' txn.TransactionId %}" style="text-decoration:none;">
+                            <div style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                                        box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; 
+                                        align-items:center; color:inherit;">
+                                
+                                <!-- Left: icon + details -->
+                                <div style="display:flex; align-items:center;">
+                                    {% if txn.TransactionType == '+' %}
+                                        <img src="{% static 'assets/img/plus.png' %}" alt="credit" 
+                                            style="width:20px; height:20px; margin-right:10px;">
+                                    {% else %}
+                                        <img src="{% static 'assets/img/minus.png' %}" alt="debit" 
+                                            style="width:20px; height:20px; margin-right:10px;">
+                                    {% endif %}
+
+                                    <div>
+                                        <div style="font-size:14px; font-weight:bold; color:#333;">
+                                            {{ txn.DispplayDate }}
+                                        </div>
+                                        <div style="font-size:12px; font-weight:600; text-transform:capitalize; color:#958d9e;">
+                                            {{ txn.TransactionStatus }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Weight -->
+                                <div style="font-size:14px; font-weight:bold;
+                                    {% if txn.TransactionType == '+' %}
+                                        color:#27ae60;
+                                    {% else %}
+                                        color:#f39c12;
+                                    {% endif %}">
+                                    {% if txn.TransactionType == '+' %}
+                                        {{ txn.Transactioneight }} g
+                                    {% else %}
+                                        {{ txn.Transactioneight }} g
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <p>No transactions available.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

@@ -29,7 +29,7 @@
     <!-- App Header -->
     <div class="appHeader">
         <div class="left">
-            <a href="#" class="headerButton goBack">
+            <a href="{% url 'dashboard1' %}" class="headerButton goBack">
                 <ion-icon name="chevron-back-outline"></ion-icon>
             </a>
         </div>
@@ -121,7 +121,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="item">
+                <a href="{% url 'change_pin' %}" class="item">
                     <div class="in">
                         <div>Change Pin</div>
                         <span class="text-primary">Edit</span>
@@ -146,25 +146,22 @@
         <div class="listview-title mt-1">Security</div>
         <ul class="listview image-listview text mb-2 inset">
             <li>
-                <a href="#" class="item">
+                <a href="{% url 'update_nominee' %}" class="item">
                     <div class="in">
                         <div>Update Nominee</div>
                     </div>
                 </a>
             </li>
-            <li>
-                <div class="item">
-                    <div class="in">
-                        <div>
-                            Raise Query
-                        </div>
-                        <div class="form-check form-switch ms-2">
-                            <input class="form-check-input" type="checkbox" id="SwitchCheckDefault3" checked />
-                            <label class="form-check-label" for="SwitchCheckDefault3"></label>
+           <li>
+                <a href="{% url 'raise_query' %}" style="text-decoration:none; color:inherit;">
+                    <div class="item">
+                        <div class="in">
+                            <div>Raise Query </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </li>
+
             <li>
                 <a href="#" class="item">
                     <div class="in">
@@ -224,7 +221,38 @@
     <!-- Base Js File -->
     <script src="{% static 'assets/js/base.js' %}"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                var msg = "{{ message|escapejs }}";
+                var tag = "{{ message.tags }}";
+
+                {% comment %} console.log(msg);
+                console.log(tag); {% endcomment %}
+                var alertType = "info";
+                var alertTitle = "Info"; 
+
+                if (tag.includes("success")) {
+                    alertType = "success";
+                    alertTitle = "Success!";
+                } else if (tag.includes("danger")) {
+                    alertType = "error";
+                    alertTitle = "Error!";
+                }
+
+                swal({
+                    title: alertTitle,
+                    text: msg,
+                    type: alertType,
+                    //timer: 5000,
+                    showConfirmButton: true
+                });
+            {% endfor %}
+        </script>
+    {% endif %}
 </body>
 
 </html>

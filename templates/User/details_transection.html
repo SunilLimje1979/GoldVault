@@ -1,0 +1,143 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000ff">
+    <title>Transaction Details</title>
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body class="bg-white">
+<style>
+html, body, #appCapsule {
+    background-color: white !important;
+    color: black !important;   /* default text color */
+    font-family: 'Poppins', sans-serif !important;
+}
+</style>
+
+
+<!-- Loader -->
+<div id="loader">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+<!-- * Loader -->
+
+<!-- App Header -->
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'get_transection_list' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+     <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 500;">
+        Transaction Detail
+    </div>
+    {% comment %} <div class="right">
+        <a href="#" class="headerButton">
+            <ion-icon name="notifications-outline"></ion-icon>
+            <span class="badge badge-danger">4</span>
+        </a>
+    </div> {% endcomment %}
+</div>
+<!-- * App Header -->
+
+<!-- App Capsule -->
+<div id="appCapsule" class="full-height">
+
+    <div class="section mt-2 mb-2">
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% else %}
+            {% if transaction %}
+                <!-- Icon + Heading -->
+                <div class="listed-detail mt-3">
+                    <div class="icon-wrapper">
+                        <div class="iconbox" 
+                            style="background-color: {% if transaction.TransactionType == '+' %}green{% else %}orange{% endif %}; 
+                                    border-radius: 50%; 
+                                    padding: 10px; 
+                                    display: inline-flex; 
+                                    align-items: center; 
+                                    justify-content: center;">
+                            {% if transaction.TransactionType == '-' %}
+                                <ion-icon name="arrow-down-outline" style="color:white;"></ion-icon>
+                            {% else %}
+                                <ion-icon name="arrow-up-outline" style="color:white;"></ion-icon>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <h3 class="text-center mt-2" style="font-family: 'Poppins', sans-serif;">
+                        {% if transaction.TransactionType == '+' %}
+                            Gold Purchase
+                        {% else %}
+                            Gold Withdraw
+                        {% endif %}
+                    </h3>
+                </div>
+
+                <!-- Details List -->
+                <ul class="listview flush transparent simple-listview no-space mt-3">
+                    <li>
+                        <strong>Status</strong>
+                        <span 
+                            class="
+                                {% if transaction.TransactionStatus == 'Requested' %}
+                                    text-warning
+                                {% elif transaction.TransactionStatus == 'Initiated' %}
+                                    text-dark
+                                {% elif transaction.TransactionStatus == 'Success' or transaction.TransactionStatus == 'Approved' %}
+                                    text-success
+                                {% else %}
+                                    text-danger
+                                {% endif %}
+                            ">
+                            {{ transaction.TransactionStatus }}
+                        </span>
+                    </li>
+
+                    <li>
+                        <strong>Gold Weight</strong>
+                        <span>{{ transaction.Transactioneight }} gm</span>
+                    </li>
+                    <li>
+                        <strong>Rate Per 1 Gm </strong>
+                        <span>₹ {{ transaction.TransactionRate }}</span>
+                    </li>
+                    <li>
+                        <strong>Total Amount</strong>
+                        <span>₹ {{ transaction.TransactionAmount }}</span>
+                    </li>
+                    <li>
+                        <strong>Transection Date</strong>
+                      <span>{{ transaction.DispplayDate }}</span>
+                    </li>
+                    <li>
+                        <strong>Order ID</strong>
+                        <span>{{ transaction.TransactionOrderId }}</span>
+                    </li>
+                   
+                </ul>
+            {% else %}
+                <p>No transaction details available.</p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+
+</div>
+<!-- * App Capsule -->
+
+<!-- ========= JS Files =========  -->
+<script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/base.js' %}"></script>
+
+</body>
+</html>

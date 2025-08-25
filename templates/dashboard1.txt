@@ -83,7 +83,7 @@
                     </div>
 
                     <div class="right">
-                        <a href="#" class="button" data-bs-toggle="modal" data-bs-target="#withdrawActionSheet">
+                        <a href="#" class="button" data-bs-toggle="modal" data-bs-target="#depositActionSheet">
                             <ion-icon name="add-outline"></ion-icon>
                         </a>
                     </div>
@@ -100,14 +100,13 @@
                         </a>
                     </div>
                     <div class="item">
-                        <a href="{% url 'get_transection_list' %}" class="link">
+                        <a href="javascript:void(0);" id="load-transactions">
                             <div class="icon-wrapper">
                                 <ion-icon name="arrow-forward-outline"></ion-icon>
                             </div>
                             <strong>Transactions</strong>
                         </a>
                     </div>
-
                     <div class="item">
                         <a href="#" data-bs-toggle="modal" data-bs-target="#sendActionSheet">
                             <div class="icon-wrapper">
@@ -116,6 +115,23 @@
                             <strong>Withdraw</strong>
                         </a>
                     </div>
+                    
+                    <!-- <div class="item">
+                        <a href="app-cards.html">
+                            <div class="icon-wrapper bg-success">
+                                <ion-icon name="card-outline"></ion-icon>
+                            </div>
+                            <strong>Cards</strong>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#exchangeActionSheet">
+                            <div class="icon-wrapper bg-warning">
+                                <ion-icon name="swap-vertical"></ion-icon>
+                            </div>
+                            <strong>Exchange</strong>
+                        </a>
+                    </div> -->
 
                 </div>
                 <!-- * Wallet Footer -->
@@ -123,45 +139,114 @@
         </div>
         <!-- Wallet Card -->
 
+        <!-- Deposit Action Sheet -->
+        <div class="modal fade action-sheet" id="depositActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Purchase Gold</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="post" action="{% url 'booking' %}">
+                                {% csrf_token %}
+                                <!-- <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account1">Product</label>
+                                        <select class="form-control custom-select" id="account1">
+                                            <option value="gold">Select</option>
+                                            <option value="gold">Gold</option>
+                                        </select>
+                                    </div>
+                                </div> -->
+
+                                <div class="form-group basic animated">
+                                    <label class="label">Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="text" name="amount" class="form-control"
+                                            placeholder="Enter an amount"
+                                            value=" 0"
+                                            min="0" max="999999.99" step="0.01"
+                                            oninput="if(this.value.length > 9) this.value = this.value.slice(0,9);">
+                                    </div>
+                                </div>
+                                <div class="form-group basic animated">
+                                    <label class="label">Gold Weight</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text"><img src="{% static 'assets/img/download.jpg' %}" alt="g" style="height:20px; width:auto;"></span>
+                                        <input type="text" name="weight" class="form-control"
+                                            placeholder="Enter gold weight"
+                                            oninput="
+                                                let val = this.value;
+                                                if(val && !/^\d{0,2}(\.\d{0,6})?$/.test(val)){
+                                                    val = val.match(/^\d{0,2}(\.\d{0,6})?/)[0];
+                                                }
+                                                if(val.includes('.')){
+                                                    let [intPart, decPart] = val.split('.');
+                                                    if(decPart.length > 5){
+                                                        val = (Math.round(parseFloat(val) * 100000) / 100000).toFixed(5);
+                                                    }
+                                                }
+                                                this.value = val;
+                                            ">
+                                    </div>
+                                </div>
+                                <div class="form-group basic">
+                                    <button type="submit" class="btn btn-primary btn-block btn-lg">Buy Now</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Deposit Action Sheet -->
+
         <!-- Withdraw Action Sheet -->
         <div class="modal fade action-sheet" id="withdrawActionSheet" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" style="font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 17px;">Buy</h5>
+                        <h5 class="modal-title">Withdraw Money</h5>
                     </div>
                     <div class="modal-body">
                         <div class="action-sheet-content">
-                            <form id="buyForm" method="POST" action="{% url 'buy_submit' %}">
-                                {% csrf_token %}
-
-                                <!-- Amount Field -->
+                            <form>
                                 <div class="form-group basic">
-                                    <label class="label">Amount (₹)</label>
-                                    <div class="input-group mb-2">
-                                        <span class="input-group-text">₹</span>
-                                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" placeholder="Amount">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account2d">From</label>
+                                        <select class="form-control custom-select" id="account2d">
+                                            <option value="0">Savings (*** 5019)</option>
+                                            <option value="1">Investment (*** 6212)</option>
+                                            <option value="2">Mortgage (*** 5021)</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                <!-- Weight Field -->
                                 <div class="form-group basic">
-                                    <label class="label">Weight (gm)</label>
-                                    <div class="input-group mb-2">
-                                        <input type="text" class="form-control" id="weight" name="weight" placeholder="Weight">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="text11d">To</label>
+                                        <input type="email" class="form-control" id="text11d" placeholder="Enter IBAN">
+                                        <i class="clear-input">
+                                            <ion-icon name="close-circle"></ion-icon>
+                                        </i>
                                     </div>
                                 </div>
 
-                                <!-- Submit Button -->
                                 <div class="form-group basic">
-                                    <button type="submit" class="btn btn-block btn-lg" 
-                                            style="background-color: #edc88f !important;
-                                                border-color:#edc88f !important;
-                                                color: black !important;
-                                                font-weight: bold;
-                                                box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                                        Buy
-                                    </button>
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text" id="basic-addonb1">$</span>
+                                        <input type="text" class="form-control" placeholder="Enter an amount"
+                                            value="100">
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <button type="button" class="btn btn-primary btn-block btn-lg"
+                                        data-bs-dismiss="modal">Withdraw</button>
                                 </div>
                             </form>
                         </div>
@@ -175,38 +260,54 @@
         <div class="modal fade action-sheet" id="sendActionSheet" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                    <div class="modal-header flex-column align-items-center text-center">
-                        <h5 class="modal-title" style="font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 17px;">Withdraw</h5>
-                        <small class="text-muted" style="font-family: 'Poppins', sans-serif;">
-                            Your Current balance weight is 
-                            <strong style="color: #000; font-weight: 700;">{{ stats.current_balance }} gm</strong>
-                        </small>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Send Money</h5>
                     </div>
-
                     <div class="modal-body">
                         <div class="action-sheet-content">
                             <form method="POST" action="{% url 'send_money' %}">
                                 {% csrf_token %}
-
-                                <div class="form-group basic">
-                                    <label class="label" for="withdraw_weight">Weight</label>
-                                    <div class="input-group mb-2">
-                                        <input type="number" step="0.00001" min="0" class="form-control" id="withdraw_weight" name="withdraw_weight" value="0" required>
+                                <!-- <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account2">From</label>
+                                        <select class="form-control custom-select" id="account2">
+                                            <option value="0">Savings (*** 5019)</option>
+                                            <option value="1">Investment (*** 6212)</option>
+                                            <option value="2">Mortgage (*** 5021)</option>
+                                        </select>
                                     </div>
-                                    <!-- error message -->
-                                    <small id="weight_error" class="text-danger d-none">Minimum required 1 gm</small>
                                 </div>
 
                                 <div class="form-group basic">
-                                    <label class="label" for="withdraw_amount">Amount</label>
+                                    <div class="input-wrapper">
+                                        <label class="label" for="text11">To</label>
+                                        <input type="email" class="form-control" id="text11"
+                                            placeholder="Enter bank ID">
+                                        <i class="clear-input">
+                                            <ion-icon name="close-circle"></ion-icon>
+                                        </i>
+                                    </div>
+                                </div> -->
+
+                                <div class="form-group basic">
+                                    <label class="label" for="withdraw_weight">Withdraw Weight</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">
+                                            <img src="static/assets/img/download.jpg" alt="logo" style="height: 20px; width: 20px;">
+                                        </span>
+                                        <input type="number" class="form-control" id="withdraw_weight" name="withdraw_weight" value="0" required>
+                                    </div>
+                                </div>
+                                <div class="form-group basic">
+                                    <label class="label" for="withdraw_amount">Withdraw Amount</label>
                                     <div class="input-group mb-2">
                                         <span class="input-group-text">₹</span>
-                                        <input type="number" step="0.01" min="0" class="form-control" id="withdraw_amount" name="withdraw_amount" value="0" required>
+                                        <input type="number" class="form-control" id="withdraw_amount" name="withdraw_amount" value="0" required>
                                     </div>
                                 </div>
 
                                 <div class="form-group basic">
-                                    <button type="submit" id="withdraw_btn" class="btn btn-block btn-lg" style="background-color: #edc88f !important; border-color:#edc88f !important;color: black !important;font-weight: bold;box-shadow: 0 4px 8px rgba(0,0,0,0.2);">Withdraw</button>
+                                    <button type="submit" class="btn btn-primary btn-block btn-lg">Send</button>
                                 </div>
                             </form>
                         </div>
@@ -214,8 +315,6 @@
                 </div>
             </div>
         </div>
-
-
         <!-- * Send Action Sheet -->
 
         <!-- Exchange Action Sheet -->
@@ -265,6 +364,9 @@
                                             value="100">
                                     </div>
                                 </div>
+
+
+
                                 <div class="form-group basic">
                                     <button type="button" class="btn btn-primary btn-block btn-lg"
                                         data-bs-dismiss="modal">Exchange</button>
@@ -282,9 +384,9 @@
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Current Balance(Gm)</div>
+                        <div class="title">Current Balance</div>
                         <div class="value" id="current_balance">
-                            {{ stats.current_balance }}
+                            ₹ {{ stats.current_balance }}
                         </div>
                     </div>
                 </div>
@@ -312,83 +414,59 @@
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Purchase Weight(Gm)</div>
-                        <div class="value">{{ stats.product_weight }}</div>
+                        <div class="title">Purchase Weight</div>
+                        <div class="value">₹ {{ stats.product_weight }}</div>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Withdrawal Weight(Gm)</div>
-                        <div class="value"> {{ stats.withdrawl_weight }} </div>
+                        <div class="title">Withdrawal Weight</div>
+                        <div class="value">₹ {{ stats.withdrawl_weight }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- * Stats -->
+
         <!-- Transactions -->
-       <div class="section mt-4">
-            <div class="section-heading" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="section mt-4">
+            <div class="section-heading">
                 <h2 class="title">Transactions</h2>
-                <a href="{% url 'get_transection_list' %}" class="link" style="color:white; text-decoration:none;">View All</a>
+                <a href="javascript:void(0);" id="view-all" class="link">View All</a>
             </div>
-
             <div class="transactions" id="transaction-list">
-                {% if transactions %}
-                    {% for txn in transactions %}
-                        <div style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
-                            
-                            <!-- Left: icon + details -->
-                            <div style="display:flex; align-items:center;">
-                                <!-- Transaction type icon -->
-                                {% if txn.TransactionType == '+' %}
-                                    <img src="{% static 'assets/img/plus.png' %}" alt="credit" style="width:20px; height:20px; margin-right:10px;">
-                                {% else %}
-                                    <img src="{% static 'assets/img/minus.png' %}" alt="debit" style="width:20px; height:20px; margin-right:10px;">
-                                {% endif %}
-
-                                <div>
-                                    <!-- Display Date -->
-                                    <div style="font-size:14px; font-weight:bold; color:#333;">
-                                        {{ txn.DispplayDate }}
-                                    </div>
-                                    <!-- Status -->
-                                    <div style="font-size:12px; font-weight:600; text-transform:capitalize; color:#958d9e;">
-                                        {{ txn.TransactionStatus }}
-                                    </div>
-                                </div>
-                            </div>
-
-                           <!-- Right: Weight -->
-                            <div style="font-size:14px; font-weight:bold;
-                                {% if txn.TransactionType == '+' %}
-                                    color:#27ae60; /* green */
-                                {% else %}
-                                    color:#f39c12; /* orange */
-                                {% endif %}">
-                                {% if txn.TransactionType == '+' %}
-                                    {{ txn.Transactioneight }} g
-                                {% else %}
-                                    {{ txn.Transactioneight }} g
-                                {% endif %}
-                            </div>
-
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No transactions available.</p>
-                {% endif %}
             </div>
         </div>
 
+        <!-- * Transactions -->
+
+        <!-- my cards -->
+        <!-- * my cards -->
+
+        <!-- Send Money -->
+        <!-- Monthly Bills -->
+        <!-- * Monthly Bills -->
 
 
+        <!-- Saving Goals -->
+        
         <!-- app footer -->
-        {% comment %} <div class="appFooter">
-            <div class="footer-title">       
+        <div class="appFooter">
+            <div class="footer-title">
+                
             </div>
-        </div> {% endcomment %}
+           
+        </div>
+        <!-- * app footer -->
+
     </div>
     <!-- * App Capsule -->
+
+
+    <!-- App Bottom Menu -->
+    
+    <!-- * App Bottom Menu -->
 
     <!-- App Sidebar -->
     <div class="modal fade panelbox panelbox-left" id="sidebarPanel" tabindex="-1" role="dialog">
@@ -401,10 +479,8 @@
                             <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged  w36">
                         </div>
                         <div class="in">
-                            <strong>{{ request.session.user.UserFullName  }}</strong>
-                            <div class="text-muted">{{request.session.user.UserMobileNo }}</div>\
-                            {% comment %} <strong>{{ user.UserFullName }}</strong>
-                            <div class="text-muted">{{ user.UserMobileNo }}</div> {% endcomment %}
+                            <strong>{{ user.UserFullName }}</strong>
+                            <div class="text-muted">{{ user.UserMobileNo }}</div>
                         </div>
                         <a href="#" class="btn btn-link btn-icon sidebar-close" data-bs-dismiss="modal">
                             <ion-icon name="close-outline"></ion-icon>
@@ -422,8 +498,15 @@
 
                     <!-- action group -->
                     <div class="action-group">
-                        
-                        <a href="#" class="action-button" data-bs-toggle="modal" data-bs-target="#withdrawActionSheet">
+                        <!-- <a href="index.html" class="action-button">
+                            <div class="in">
+                                <div class="iconbox">
+                                    <ion-icon name="add-outline"></ion-icon>
+                                </div>
+                                Deposit
+                            </div>
+                        </a> -->
+                        <a href="index.html" class="action-button">
                             <div class="in">
                                 <div class="iconbox">
                                     <ion-icon name="arrow-down-outline"></ion-icon>
@@ -431,17 +514,15 @@
                                 Buy
                             </div>
                         </a>
-
-                        <a href="{% url 'get_transection_list' %}" class="action-button">
+                        <a href="app-cards.html" class="action-button">
                             <div class="in">
                                 <div class="iconbox">
                                     <ion-icon name="card-outline"></ion-icon>
                                 </div>
-                                Transactions
+                                Transaction
                             </div>
                         </a>
-                         
-                        <a href="#" class="action-button" data-bs-toggle="modal" data-bs-target="#sendActionSheet">
+                        <a href="index.html" class="action-button">
                             <div class="in">
                                 <div class="iconbox">
                                     <ion-icon name="arrow-forward-outline"></ion-icon>
@@ -457,7 +538,7 @@
                     <div class="listview-title mt-1">Option</div>
                     <ul class="listview flush transparent no-line image-listview">
                         <li>
-                            <a href="{% url 'faq' %}" class="item">
+                            <a href="index.html" class="item">
                                 <div class="icon-box bg-primary">
                                     <ion-icon name="pie-chart-outline"></ion-icon>
                                 </div>
@@ -468,7 +549,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'support_contact' %}" class="item">
+                            <a href="app-pages.html" class="item">
                                 <div class="icon-box bg-primary">
                                     <ion-icon name="document-text-outline"></ion-icon>
                                 </div>
@@ -478,7 +559,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'support_contact' %}" class="item">
+                            <a href="app-components.html" class="item">
                                 <div class="icon-box bg-primary">
                                     <ion-icon name="apps-outline"></ion-icon>
                                 </div>
@@ -504,7 +585,7 @@
                     <!-- <div class="listview-title mt-1">Others</div> -->
                     <ul class="listview flush transparent no-line image-listview">
                         <li>
-                            <a href="{% url 'raise_query' %}" class="item">
+                            <a href="app-settings.html" class="item">
                                 <div class="icon-box bg-primary">
                                     <ion-icon name="settings-outline"></ion-icon>
                                 </div>
@@ -513,17 +594,16 @@
                                 </div>
                             </a>
                         </li>
-                        <li>
-                            <a href="{% url 'old_queries' %}" class="item">
+                        <!-- <li>
+                            <a href="component-messages.html" class="item">
                                 <div class="icon-box bg-primary">
-                                    <ion-icon name="time-outline"></ion-icon>
+                                    <ion-icon name="chatbubble-outline"></ion-icon>
                                 </div>
                                 <div class="in">
-                                    Past Queries
+                                    Support
                                 </div>
                             </a>
-                        </li>
-
+                        </li> -->
                         <li>
                             <a href="{% url 'logout' %}"class="item">
                                 <div class="icon-box bg-primary">
@@ -534,7 +614,41 @@
                                 </div>
                             </a>
                         </li>
-                    </ul>   
+
+
+                    </ul>
+                    <!-- * others -->
+
+                    <!-- send money -->
+                    <!-- <div class="listview-title mt-1">Send Money</div>
+                    <ul class="listview image-listview flush transparent no-line">
+                        <li>
+                            <a href="#" class="item">
+                                <img src="{% static 'assets/img/sample/avatar/avatar2.jpg' %}" alt="image" class="image">
+                                <div class="in">
+                                    <div>Artem Sazonov</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="item">
+                                <img src="{% static 'assets/img/sample/avatar/avatar4.jpg' %}" alt="image" class="image">
+                                <div class="in">
+                                    <div>Sophie Asveld</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="item">
+                                <img src="{% static 'assets/img/sample/avatar/avatar3.jpg' %}" alt="image" class="image">
+                                <div class="in">
+                                    <div>Kobus van de Vegte</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul> -->
+                    <!-- * send money -->
+
                 </div>
             </div>
         </div>
@@ -624,141 +738,101 @@
 
     <!-- ========= JS Files =========  -->
     <!-- Bootstrap -->
-    {% comment %} <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script> {% endcomment %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
     <!-- Ionicons -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
     <!-- Splide -->
     <script src="{% static 'assets/js/plugins/splide/splide.min.js' %}"></script>
     <!-- Base Js File -->
     <script src="{% static 'assets/js/base.js' %}"></script>
-   <script>
-    let sellRate = parseFloat("{{ sell_rate }}"); // price per gram
-
-    const amountInput = document.getElementById('amount');
-    const weightInput = document.getElementById('weight');
-
-    // Helper: keep up to 5 decimals and remove extra zeros
-    function formatDecimals(value, decimals) {
-        return parseFloat(value).toFixed(decimals);
-    }
-
-    // When amount changes, calculate weight (5 decimals)
-    amountInput.addEventListener('input', () => {
-        let amount = parseFloat(amountInput.value);
-        if (!isNaN(amount) && sellRate > 0) {
-            weightInput.value = formatDecimals(amount / sellRate, 5);
-        } else {
-            weightInput.value = '';
-        }
-    });
-
-    // When weight changes, calculate amount (2 decimals)
-    weightInput.addEventListener('input', () => {
-        let weight = parseFloat(weightInput.value);
-        if (!isNaN(weight) && sellRate > 0) {
-            amountInput.value = formatDecimals(weight * sellRate, 2);
-        } else {
-            amountInput.value = '';
-        }
-    });
-    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            let sellRate = parseFloat("{{ sell_rate }}"); // price per gram
-            let balance = parseFloat("{{ stats.current_balance }}");
-
-            const amountInput = document.getElementById('withdraw_amount');
-            const weightInput = document.getElementById('withdraw_weight');
-            const withdrawBtn = document.getElementById('withdraw_btn');
-            const weightError = document.getElementById('weight_error');
-
-            // Helper: format decimals
-            function formatDecimals(value, decimals) {
-                return parseFloat(value).toFixed(decimals);
-            }
-
-            // Validate minimum weight
-            function validateWeight() {
-                let weight = parseFloat(weightInput.value);
-                if (isNaN(weight) || weight < 1) {
-                    withdrawBtn.disabled = true;
-                    weightError.classList.remove("d-none");
+            const apiUrl = "https://www.gyaagl.app/goldvault_api/getbalances"; 
+            const payload = {
+                ClientCode: "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+                UserCode: "{{ user }}" 
+            };
+            console.log("UserCode from session:", payload.UserCode);
+            fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message_code === 1000) {
+                    const stats = data.message_data[0];
+                    document.getElementById("current_balance").innerText = "₹ " + stats.CurrentBalance;
+                    document.getElementById("todays_value").innerText = "₹ " + stats.TodaysValue;
+                    document.getElementById("total_invested").innerText = "₹ " + stats.TotalInvested;
+                    document.getElementById("gain_loss").innerText = "₹ " + stats.GainLoss;
                 } else {
-                    // enable only if balance ≥ 1
-                    if (balance >= 1) {
-                        withdrawBtn.disabled = false;
-                    }
-                    weightError.classList.add("d-none");
+                    console.error("API Error:", data.message_text);
                 }
-            }
-
-            // When amount changes → calculate weight
-            amountInput.addEventListener('input', () => {
-                let amount = parseFloat(amountInput.value);
-                if (!isNaN(amount) && sellRate > 0) {
-                    weightInput.value = formatDecimals(amount / sellRate, 5);
-                } else {
-                    weightInput.value = '';
-                }
-                validateWeight();
-            });
-
-            // When weight changes → calculate amount
-            weightInput.addEventListener('input', () => {
-                let weight = parseFloat(weightInput.value);
-                if (!isNaN(weight) && sellRate > 0) {
-                    amountInput.value = formatDecimals(weight * sellRate, 2);
-                } else {
-                    amountInput.value = '';
-                }
-                validateWeight();
-            });
-
-            // Disable all if balance < 1
-            if (balance < 1) {
-                weightInput.disabled = true;
-                amountInput.disabled = true;
-                withdrawBtn.disabled = true;
-            }
-
-            // Run validation initially
-            validateWeight();
+            })
+            .catch(err => console.error("Fetch Error:", err));
         });
-        </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+        
+        AddtoHome("2000", "once");
+            let allTransactions = [];
+        let showingAll = false;
 
-    {% if messages %}
-        <script>
-            {% for message in messages %}
-                var msg = "{{ message|escapejs }}";
-                var tag = "{{ message.tags }}";
-
-                {% comment %} console.log(msg);
-                console.log(tag); {% endcomment %}
-                var alertType = "info";
-                var alertTitle = "Info"; 
-
-                if (tag.includes("success")) {
-                    alertType = "success";
-                    alertTitle = "Success!";
-                } else if (tag.includes("danger")) {
-                    alertType = "error";
-                    alertTitle = "Error!";
+        document.getElementById("load-transactions").addEventListener("click", function() {
+            fetch("/get-transactions/")
+            .then(response => response.json())
+            .then(data => {
+                if (data.transactions && data.transactions.length > 0) {
+                    allTransactions = data.transactions;
+                    renderTransactions(false); // show only 5 by default
+                } else {
+                    document.getElementById("transaction-list").innerHTML = "<p>No transactions found</p>";
                 }
+            })
+            .catch(error => {
+                console.error("Error fetching transactions:", error);
+            });
+        });
 
-                swal({
-                    title: alertTitle,
-                    text: msg,
-                    type: alertType,
-                    //timer: 5000,
-                    showConfirmButton: true
-                });
-            {% endfor %}
-        </script>
-    {% endif %}
+        // Toggle between 5 and all
+        document.getElementById("view-all").addEventListener("click", function() {
+            showingAll = !showingAll;
+            renderTransactions(showingAll);
+            this.innerText = showingAll ? "View Less" : "View All";
+        });
+
+        // Render function
+        function renderTransactions(showAll) {
+            let container = document.getElementById("transaction-list");
+            container.innerHTML = "";
+
+            let transactionsToShow = showAll ? allTransactions : allTransactions.slice(0, 5);
+
+            transactionsToShow.forEach(tx => {
+                let cssClass = tx.type === "+" ? "price text-success" : "price text-danger";
+                container.innerHTML += `
+                    <a href="#" class="item">
+                        <div class="detail">
+                            <div>
+                                <strong>Txn ID: ${tx.id}</strong>
+                                <p>Status: ${tx.status}</p>
+                            </div>
+                        </div>
+                        <div class="right">
+                            <div class="${cssClass}">
+                                ${tx.type} | Date: ${tx.date}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+
+    </script>
+
 </body>
 
 </html>

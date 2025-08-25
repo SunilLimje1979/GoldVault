@@ -18,5 +18,19 @@ urlpatterns = [
     path("booking/", views.booking, name="booking"),
     path('member-list/', views.member_list, name='member_list'),
     path('withdrawl-list/', views.withdrawal_list, name='withdrawl_list'),
-
+    
+    ##############################################################################
+    path("get_transection_list/", views.get_transection_list, name="get_transection_list"),
+    path("details_transection/<str:id>/", views.details_transection, name="details_transection"),
+    path('buy_submit/', views.buy_submit, name='buy_submit'),
+    path('faq/', views.faq, name='faq'),
+    path('termsofuse/', views.termsofuse, name='termsofuse'),
+    path('privacypolicy/', views.privacypolicy, name='privacypolicy'),
+    path('membershipagrement/', views.membershipagrement, name='membershipagrement'),
+    path('support_contact/', views.support_contact, name='support_contact'),
+    path('old_queries/', views.old_queries, name='old_queries'),
+    path('raise_query/', views.raise_query, name='raise_query'),
+    path('payment_update/', views.payment_update, name='payment_update'),
+    path('change_pin/', views.change_pin, name='change_pin'),
+    path('update_nominee/', views.update_nominee, name='update_nominee'),
 ]

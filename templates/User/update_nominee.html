@@ -1,0 +1,222 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Update Nominee</title>
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:500;">
+        {% if nominees %} Update Nominee {% else %} Add Nominee {% endif %}
+    </div>
+</div>
+
+<div id="appCapsule">
+    <div class="section mt-2">
+        <form method="post" action="{% url 'update_nominee' %}">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body pb-1">
+                    {% if nominees %}
+                        {% with n=nominees.0 %}
+                            <input type="hidden" name="NomineeId" value="{{ n.NomineeId }}">
+                            <input type="hidden" name="ClientId" value="{{ n.ClientId }}">
+                            <input type="hidden" name="UserId" value="{{ n.UserId }}">
+                            <input type="hidden" name="AccountId" value="{{ n.AccountId }}">
+                        {% endwith %}
+                    {% endif %}
+
+                    <!-- Full Name -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomineeFullName">Nominee Name</label>
+                            <input type="text" class="form-control" id="NomineeFullName" name="NomineeFullName"
+                                placeholder="Nominee Name"
+                                value="{% if nominees %}{{ nominees.0.NomineeFullName }}{% endif %}" required>
+                        </div>
+                    </div>
+
+                    <!-- Relation -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomieeRelation">Relation</label>
+                            <select class="form-control" id="NomieeRelation" name="NomieeRelation" required>
+                                <option value="">-- Select Relation --</option>
+                                <option value="1" {% if nominees and nominees.0.NomieeRelation == "1" %}selected{% endif %}>Wife</option>
+                                <option value="2" {% if nominees and nominees.0.NomieeRelation == "2" %}selected{% endif %}>Mother</option>
+                                <option value="3" {% if nominees and nominees.0.NomieeRelation == "3" %}selected{% endif %}>Father</option>
+                                <option value="4" {% if nominees and nominees.0.NomieeRelation == "4" %}selected{% endif %}>Daughter</option>
+                                <option value="5" {% if nominees and nominees.0.NomieeRelation == "5" %}selected{% endif %}>Son</option>
+                                <option value="6" {% if nominees and nominees.0.NomieeRelation == "6" %}selected{% endif %}>Brother</option>
+                                <option value="7" {% if nominees and nominees.0.NomieeRelation == "7" %}selected{% endif %}>Sister</option>
+                                <option value="8" {% if nominees and nominees.0.NomieeRelation == "8" %}selected{% endif %}>Friend</option>
+                                <option value="9" {% if nominees and nominees.0.NomieeRelation == "9" %}selected{% endif %}>SecondRelative</option>
+                                <option value="10" {% if nominees and nominees.0.NomieeRelation == "10" %}selected{% endif %}>Other</option>
+                                <option value="11" {% if nominees and nominees.0.NomieeRelation == "11" %}selected{% endif %}>Husband</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomineeDateofBirth">Date of Birth</label>
+                            <input type="date" class="form-control" id="NomineeDateofBirth" name="NomineeDateofBirth"
+                                value="{% if nominees and nominees.0.NomineeDateofBirth != '0' %}{{ nominees.0.NomineeDateofBirth }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <!-- Mobile -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomieeMobileNo">Mobile Number</label>
+                            <input type="text" class="form-control" id="NomieeMobileNo" name="NomieeMobileNo"
+                                placeholder="Mobile"
+                                value="{% if nominees %}{{ nominees.0.NomieeMobileNo }}{% endif %}"
+                                maxlength="10" pattern="\d{10}" inputmode="numeric"
+                                oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        </div>
+                    </div>
+
+                    <!-- PAN -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomieePanNo">PAN Number</label>
+                            <input type="text" class="form-control" id="NomieePanNo" name="NomieePanNo"
+                                placeholder="PAN Number"
+                                value="{% if nominees %}{{ nominees.0.NomieePanNo }}{% endif %}"
+                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                maxlength="10"
+                                title="Please enter a valid PAN Number (e.g. AAAPA1234A)">
+                        </div>
+                    </div>
+
+
+                    <!-- Aadhar -->
+                    <div class="form-group basic animated">
+                    <div class="input-wrapper">
+                        <label class="label" for="NomieeAadharNo">Aadhar Number</label>
+                        <input
+                        type="text"
+                        class="form-control"
+                        id="NomieeAadharNo"
+                        name="NomieeAadharNo"
+                        placeholder="1234-5678-4321"
+                        value="{% if nominees %}{{ nominees.0.NomieeAadharNo }}{% endif %}"
+                        maxlength="14"
+                        pattern="^[0-9]{4}-[0-9]{4}-[0-9]{4}$"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        >
+                    </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomineeAddress">Address</label>
+                            <textarea class="form-control" id="NomineeAddress" name="NomineeAddress"
+                                placeholder="Address">{% if nominees %}{{ nominees.0.NomineeAddress }}{% endif %}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="NomineeStatus">Status</label>
+                            <select class="form-control" id="NomineeStatus" name="NomineeStatus" required>
+                                <option value="1" {% if nominees and nominees.0.NomineeStatus == '1' %}selected{% endif %}>Active</option>
+                                <option value="0" {% if nominees and nominees.0.NomineeStatus == '0' %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12 mb-2 px-4">
+                    <button type="submit" class="btn btn-block btn-lg w-100"
+                            style="background-color:#edc88f !important;border-color:#edc88f !important;color:black !important;border-radius:8px;font-weight:600;">
+                        {% if nominees %} Update Nominee {% else %} Add Nominee {% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/base.js' %}"></script>
+<script>
+(function () {
+  const el = document.getElementById('NomieeAadharNo');
+  if (!el) return;
+
+  function formatAadhar(v) {
+    const digits = String(v || '').replace(/\D/g, '').slice(0, 12);
+    const parts = [];
+    for (let i = 0; i < digits.length; i += 4) {
+      parts.push(digits.substring(i, i + 4));
+    }
+    return parts.join('-');
+  }
+
+  // Format any prefilled value (with or without dashes)
+  el.value = formatAadhar(el.value);
+
+  el.addEventListener('input', function () {
+    const cursorFromEnd = el.value.length - el.selectionStart;
+    el.value = formatAadhar(el.value);
+    const newPos = Math.max(el.value.length - cursorFromEnd, 0);
+    el.setSelectionRange(newPos, newPos);
+  });
+
+  el.addEventListener('paste', function (e) {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    const formatted = formatAadhar(text);
+    document.execCommand('insertText', false, formatted);
+  });
+})();
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            var msg = "{{ message|escapejs }}";
+            var tag = "{{ message.tags }}";
+
+            var alertType = "info";
+            var alertTitle = "Info";
+
+            if (tag.includes("success")) {
+                alertType = "success";
+                alertTitle = "Success!";
+            } else if (tag.includes("danger")) {
+                alertType = "error";
+                alertTitle = "Error!";
+            }
+
+            swal({
+                title: alertTitle,
+                text: msg,
+                type: alertType,
+                showConfirmButton: true
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+</body>
+</html>
