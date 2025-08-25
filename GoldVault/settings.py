@@ -127,7 +127,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # STATIC_URL = '/static/'
-STATIC_URL = 'GoldVault/static/'
+STATIC_URL = '/GoldVault/static/'
 
 # MEDIA_URL = 'images/'
 MEDIA_URL = 'GoldVault/images/'
