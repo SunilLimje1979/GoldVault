@@ -756,7 +756,7 @@ def member_withdrawl_list(request):
             else:
                 error = data.get("message_text", "No withdrawls found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Withdrawl API Exception: {str(e)}"
@@ -916,7 +916,7 @@ def get_booking_list(request):
             else:
                 error = data.get("message_text", "No Bookings found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Booking API Exception: {str(e)}"
@@ -1049,7 +1049,7 @@ def get_withdrawal_list(request):
 
     try:
         response = requests.post(api_url, json=payload, headers=headers, timeout=10)
-        # print("DEBUG: Withdrawal API response:", response.text)
+        print("DEBUG: Withdrawal API response:", response.text)
         data = response.json()
         if data.get("message_code") == 1000:
             # data = response.json()
@@ -1060,7 +1060,7 @@ def get_withdrawal_list(request):
             else:
                 error = data.get("message_text", "No Withdrwals found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Withdrawal API Exception: {str(e)}"
@@ -1105,7 +1105,7 @@ def member_booking_list(request):
             else:
                 error = data.get("message_text", "No Bookings order found.")
         else:
-            error = f"API Error: {data.get("message_text")}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"booking order API Exception: {str(e)}"
