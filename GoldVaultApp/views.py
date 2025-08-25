@@ -8,6 +8,7 @@ from functools import wraps
 from datetime import datetime
 import pytz
 from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal
 
 ############## Decorator to check the user is loggined and it must Owner or not (UserType==1)
 def owner_required(view_func):
@@ -454,6 +455,16 @@ def buy_submit(request):
         amount = request.POST.get('amount')
         weight = request.POST.get('weight')
 
+        if not weight:
+            messages.error(request, "Weight is invalid.")
+            return redirect('dashboard1')
+
+        try:
+            weight_decimal = Decimal(weight).quantize(Decimal('0.00000'))  # Always 5 decimal places
+        except:
+            messages.error(request, "Weight is invalid.")
+            return redirect('dashboard1')
+
         user = request.session.get('user', {})
         user_code = user.get('UserCode')
         client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
@@ -493,9 +504,11 @@ def buy_submit(request):
             "ClientCode": client_code,
             "ProductDailyRate": sell_rate,
             "BookingAmount": amount,
-            "BookingWeight": weight,
+            "BookingWeight": str(weight_decimal),
             "UserCode": user_code
         }
+        
+        print("booking Payload:" ,booking_payload)
 
         try:
             booking_response = requests.post(booking_api_url, json=booking_payload, headers=headers, timeout=10)
@@ -733,7 +746,16 @@ def send_money(request):
         print(user_code)
         
         withdraw_amount = request.POST.get('withdraw_amount')
-        withdraw_weight = request.POST.get('withdraw_weight')        
+        withdraw_weight = request.POST.get('withdraw_weight')    
+         # Validate and format withdraw_weight
+        try:
+            withdraw_weight = "{:.5f}".format(float(withdraw_weight))
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid withdraw weight.")
+            return redirect('dashboard1')
+        
+        print(withdraw_weight)
+        
         api_url = 'https://www.gyaagl.app/goldvault_api/withdrawlrequest'  
 
         payload = {
@@ -743,6 +765,7 @@ def send_money(request):
             "WithdrawlWeight": withdraw_weight,
             "WithdrawlAmount": withdraw_amount
         }
+        
         headers = {
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json",
