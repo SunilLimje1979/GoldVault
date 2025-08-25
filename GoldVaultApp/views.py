@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from functools import wraps
 from datetime import datetime
 import pytz
+from django.views.decorators.csrf import csrf_exempt
 
 ##############Decorator to check the user is loggined and it must Owner or not (UserType==1)
 def owner_required(view_func):
@@ -347,6 +348,7 @@ def update_sell_rate(request):
             return render(request, "dashboard.html", {"error": str(e)})
 
     return redirect(dashboard_view)
+
 def get_rate(request):
     api_url = "https://www.gyaagl.app/goldvault_api/getrate"
 
@@ -769,7 +771,7 @@ def member_withdrawl_list(request):
         {"members": members, "error": error},
     )
 
-from django.views.decorators.csrf import csrf_exempt
+
 # @csrf_exempt   # if you already use CSRF token in template you can remove this
 # def update_withdraw_status(request):
 #     if request.method == "POST":
