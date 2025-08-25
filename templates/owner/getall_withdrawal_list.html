@@ -202,7 +202,7 @@ $(document).ready(function(){
         // Set status text
         let statusText = "Pending";
         if(status == "1") statusText = "Approved";
-        else if(status == "2") statusText = "Rejected";
+        else if(status == "4") statusText = "Rejected";
         else if(status == "3") statusText = "Delivered";
         $("#modalStatus").text(statusText);
 
@@ -222,8 +222,8 @@ $(document).ready(function(){
             $("#rejectBtn").text("Reject").show();
             $("#closeModal").show();
         }
-        else if(status == "2" || status == "3"){ 
-            // REJECTED or DELIVERED -> Ok only
+        else if(status == "3" || status == "4"){ 
+            //  DELIVERED or REJECTED -> Ok only
             $("#okBtn").show();
         }
 
