@@ -212,6 +212,7 @@ $(document).ready(function(){
 
         // Set status text
         let statusText = "Pending";
+        if(record.orderstatus == "0") statusText = "Initiated";
         if(record.orderstatus == "1") statusText = "Pending";
         else if(record.orderstatus == "2") statusText = "Approved";
         else if(record.orderstatus == "3") statusText = "Rejected";
