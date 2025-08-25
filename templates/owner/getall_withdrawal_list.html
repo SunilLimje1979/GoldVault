@@ -1,0 +1,274 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Withdrawals</title>
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <link rel="manifest" href="{% static 'assets/__manifest.json' %}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:Poppins,sans-serif;">Withdrawals</div>
+    <div class="right"></div>
+</div>
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <!-- 📅 Date + icons row -->
+        <div class="section mt-2" style="display:flex; gap:8px; align-items:center;">
+            <form method="get" action="{% url 'get_withdrawal_list' %}" style="display:flex; flex:1; gap:6px; align-items:center;">
+                <input type="date" name="date" value="{{ date|default:'' }}" 
+                    style="flex:1; padding:6px; border:1px solid #ccc; border-radius:8px;">
+                <!-- 🔍 Search icon -->
+                <button type="submit" style="background:none; border:none; cursor:pointer;">
+                    <ion-icon name="search-outline" style="font-size:22px; color:#edc88f;"></ion-icon>
+                </button>
+            </form>
+            <!-- 🔄 Refresh -->
+            <a href="{% url 'get_withdrawal_list' %}" style="text-decoration:none;">
+                <ion-icon name="refresh-outline" style="font-size:22px; color:#edc88f;"></ion-icon>
+            </a>
+            <!-- ⚙️ Filter (toggles search bar) -->
+            <a href="javascript:void(0);" onclick="toggleSearch()" style="text-decoration:none;">
+                <ion-icon name="filter-outline" style="font-size:22px; color:#edc88f;"></ion-icon>
+            </a>
+        </div>
+
+        <!-- 🔎 Search Box (hidden by default) -->
+        <div class="section mt-2" id="searchBox" style="display:none; transition:all 0.3s ease;">
+            <input type="text" id="memberSearch" placeholder="Search by name or mobile..."
+                style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; margin-bottom:15px;">
+        </div>
+
+        <!-- 📌 Booking sections -->
+        {% for status, records in Withdrawal.items %}
+        <div class="section mt-2 withdraw-section">
+            <!-- <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleSection(this)">
+                {{ status }}
+                <ion-icon name="chevron-down-outline" style="transition:transform 0.2s;"></ion-icon>
+            </div> -->
+            <div class="section-title" 
+                style="display:flex; align-items:center; gap:6px; cursor:pointer;" 
+                onclick="toggleSection(this)">
+                <span>{{ status }}</span>
+                <ion-icon name="chevron-down-outline" style="transition:transform 0.2s;"></ion-icon>
+            </div>
+
+            <div class="card section-content" style="padding:0;">
+                <ul class="listview flush transparent no-line image-listview detailed-list mt-1 mb-1">
+                    {% if records %}
+                        {% for m in records %}
+                        <li class="withdraw-card"
+                        data-usercode="{{m.UserCode}}"
+                        data-id="{{ m.WithdrawlId }}"
+                        data-name="{{ m.UserFullName }}"
+                        data-mobile="{{ m.UserMobileNo }}"
+                        data-date="{{ m.RequestDateTime }}"
+                        data-weight="{{ m.WithdrawWeight }}"
+                        data-status="{{ m.OrderStatus }}">
+                            <a href="#" onclick="event.preventDefault();" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="cube-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    <div>
+                                        <strong class="user-name">{{ m.UserFullName }}</strong>
+                                        <div class="text-small text-secondary user-mobile">{{ m.UserMobileNo }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>{{ m.WithdrawWeight }} g</strong>
+                                        <div class="text-small">₹ {{ m.WithdrawAmount }}</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li style="padding:12px; text-align:center; color:#888;">
+                            No {{ status }} Withdrawal found.
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+<!-- Modal -->
+<div id="withdrawModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+     background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9999;">
+    <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#000; font-weight:bold;">
+        <h3 style="margin-bottom:15px;">Withdrawal Request</h3>
+        <p><strong>Name:</strong> <span id="modalName"></span></p>
+        <p><strong>Mobile:</strong> <span id="modalMobile"></span></p>
+        <p><strong>Request Date:</strong> <span id="modalDate"></span></p>
+        <p><strong>Weight:</strong> <span id="modalWeight"></span> g</p>
+        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+
+        <!-- Hidden ID -->
+        <input type="hidden" id="modalWithdrawId">
+        <input type="hidden" id="usercode">
+
+        <!-- Action Buttons -->
+        <div id="actionButtons" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;">
+            <button id="approveBtn" style="flex:1; padding:10px; background:#28a745; color:#fff; border:none; border-radius:8px;">Approve</button>
+            <button id="rejectBtn" style="flex:1; padding:10px; background:#dc3545; color:#fff; border:none; border-radius:8px;">Reject</button>
+            <button id="okBtn" style="flex:1; padding:10px; background:#007bff; color:#fff; border:none; border-radius:8px; display:none;">Ok</button>
+        </div>
+
+        <button id="closeModal" style="margin-top:15px; width:100%; padding:10px; background:#6c757d; color:#fff; border:none; border-radius:8px;">Close</button>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- 🔎 JS -->
+<script>
+function toggleSearch() {
+    let box = document.getElementById("searchBox");
+    box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
+}
+
+// Section toggle
+function toggleSection(titleEl) {
+    let icon = titleEl.querySelector("ion-icon");
+    let content = titleEl.nextElementSibling;
+    if (content.style.display === "none") {
+        content.style.display = "block";
+        icon.setAttribute("name", "chevron-down-outline");
+    } else {
+        content.style.display = "none";
+        icon.setAttribute("name", "chevron-forward-outline"); // › closed
+    }
+}
+
+// Search filter
+document.getElementById("memberSearch")?.addEventListener("input", function() {
+    let filter = this.value.toLowerCase();
+    let sections = document.querySelectorAll(".withdraw-section");
+
+    sections.forEach(section => {
+        let cards = section.querySelectorAll(".withdraw-card");
+        let matchFound = false;
+
+        cards.forEach(card => {
+            let name = card.querySelector(".user-name").innerText.toLowerCase();
+            let mobile = card.querySelector(".user-mobile").innerText.toLowerCase();
+            if (name.includes(filter) || mobile.includes(filter)) {
+                card.style.display = "";
+                matchFound = true;
+            } else {
+                card.style.display = "none";
+            }
+        });
+
+        section.style.display = matchFound || filter === "" ? "" : "none";
+    });
+});
+</script>
+
+<script>
+$(document).ready(function(){
+    // Open modal on card click
+    $(".withdraw-card").on("click", function(){
+        var status = $(this).data("status");
+
+        $("#modalWithdrawId").val($(this).data("id"));
+        $("#usercode").val($(this).data("usercode"));
+        $("#modalName").text($(this).data("name"));
+        $("#modalMobile").text($(this).data("mobile"));
+        $("#modalDate").text($(this).data("date"));
+        $("#modalWeight").text($(this).data("weight"));
+
+        // Set status text
+        let statusText = "Pending";
+        if(status == "1") statusText = "Approved";
+        else if(status == "2") statusText = "Rejected";
+        else if(status == "3") statusText = "Delivered";
+        $("#modalStatus").text(statusText);
+
+        // Reset buttons
+        $("#approveBtn, #rejectBtn, #okBtn, #closeModal").hide();
+
+        // Show buttons based on status
+        if(status == "0"){ 
+            // INITIATED -> Approve + Reject
+            $("#approveBtn").text("Approve").show();
+            $("#rejectBtn").text("Reject").show();
+            $("#closeModal").show();
+        }
+        else if(status == "1"){ 
+            // APPROVED -> Deliver + Reject
+            $("#approveBtn").text("Deliver").show();
+            $("#rejectBtn").text("Reject").show();
+            $("#closeModal").show();
+        }
+        else if(status == "2" || status == "3"){ 
+            // REJECTED or DELIVERED -> Ok only
+            $("#okBtn").show();
+        }
+
+        $("#withdrawModal").css("display","flex");
+    });
+
+    // Close modal
+    $("#closeModal, #okBtn").on("click", function(){
+        $("#withdrawModal").hide();
+    });
+
+    // Approve/Reject/Deliver via AJAX
+    $("#approveBtn, #rejectBtn").on("click", function(){
+        document.getElementById('loader').style.display = 'flex';
+        var action = $(this).text().toLowerCase(); // approve / reject / deliver
+        var withdrawId = $("#modalWithdrawId").val();
+        var usercode = $("#usercode").val();
+
+        $.ajax({
+            url: "{% url 'update_withdraw_status' %}",
+            type: "POST",
+            data: {
+                "withdraw_id": withdrawId,
+                "action": action,
+                "usercode":usercode,
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            },
+            success: function(resp){
+                if(resp.success){
+                    alert(resp.message);
+                    location.reload();
+                } else {
+                    alert("Error: " + resp.message);
+                    location.reload();
+                }
+            },
+            error: function(){
+                alert("Something went wrong.");
+                location.reload();
+            }
+        });
+    });
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Booking Orders</title>
+    <link rel="manifest" href="{% static 'assets/__manifest.json' %}">
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:Poppins,sans-serif;">Pending Bookings</div>
+    <div class="right"></div>
+</div>
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <div class="section mt-2">
+            
+            <div class="transactions">
+                {% for m in members %}
+                <div class="booking-card" 
+                    data-usercode="{{m.UserCode}}"
+                    data-bookingid="{{ m.BookingId }}"
+                    data-productid="{{ m.ProductId }}"
+                    data-name="{{ m.UserFullName }}"
+                    data-mobile="{{ m.UserMobileNo }}"
+                    data-date="{{ m.BookingDateTime }}"
+                    data-weight="{{ m.BookingWeight }}"
+                    data-amount="{{ m.BookingAmount }}"
+                    data-orderstatus="{{ m.OrderStatus }}"
+                    data-OrderId="{{ m.OrderId }}"
+                    style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                        box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+
+                    <!-- Left: avatar + details -->
+                    <div style="display:flex; align-items:center;">
+                        <img src="/static/assets/img/minus.png" 
+                            alt="member" style="width:30px; height:30px; border-radius:50%; margin-right:12px;">
+                        <div>
+                            <div style="font-size:15px; font-weight:600; color:#333;">
+                                {{ m.UserFullName }}
+                            </div>
+                            <div style="font-size:13px; color:#666;">
+                                {{ m.UserMobileNo }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: withdrawal weight -->
+                    <div style="font-size:14px; font-weight:bold; color:#424043;">
+                        {{ m.BookingWeight }} g
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- 📌 Booking Modal -->
+<div id="bookingModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9999;">
+    <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#000; font-weight:bold;">
+        <h3 style="margin-bottom:15px;">Booking Detail</h3>
+        <p><strong>Name:</strong> <span id="bModalName"></span></p>
+        <p><strong>Mobile:</strong> <span id="bModalMobile"></span></p>
+        <p><strong>Booking Date:</strong> <span id="bModalDate"></span></p>
+        <p><strong>Weight:</strong> <span id="bModalWeight"></span> g</p>
+        <p><strong>Amount:</strong> ₹ <span id="bModalAmount"></span></p>
+         <p><strong>Order ID:</strong> <span id="bModalOrderId"></span></p>
+        <p><strong>Status:</strong> <span id="bModalStatus"></span></p>
+
+        <!-- Hidden IDs -->
+        <input type="hidden" id="bModalBookingId">
+        <input type="hidden" id="bModalUserCode">
+        <input type="hidden" id="bookingOrderId">
+
+        <!-- Action Buttons -->
+        <div id="bActionButtons" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;">
+            <button id="bApproveBtn" style="flex:1; padding:10px; background:#28a745; color:#fff; border:none; border-radius:8px;">Approve</button>
+            <button id="bRejectBtn" style="flex:1; padding:10px; background:#dc3545; color:#fff; border:none; border-radius:8px;">Reject</button>
+            <button id="bOkBtn" style="flex:1; padding:10px; background:#007bff; color:#fff; border:none; border-radius:8px; display:none;">Ok</button>
+        </div>
+
+        <button id="bCloseModal" style="margin-top:15px; width:100%; padding:10px; background:#6c757d; color:#fff; border:none; border-radius:8px;">Close</button>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    // Open modal on booking card click
+    $(".booking-card").on("click", function(){
+        let record = $(this).data();
+
+        $("#bModalBookingId").val(record.bookingid);
+        $("#bModalUserCode").val(record.usercode);
+        $("#bookingOrderId").val(record.orderid);
+        $("#bModalName").text(record.name);
+        $("#bModalMobile").text(record.mobile);
+        $("#bModalDate").text(record.date);
+        $("#bModalWeight").text(record.weight);
+        $("#bModalAmount").text(record.amount);
+        $("#bModalOrderId").text(record.orderid);
+
+        // Set status text
+        let statusText = "Pending";
+        if(record.orderstatus == "1") statusText = "Pending";
+        else if(record.orderstatus == "2") statusText = "Approved";
+        else if(record.orderstatus == "3") statusText = "Rejected";
+        $("#bModalStatus").text(statusText);
+
+        // Reset buttons
+        $("#bApproveBtn, #bRejectBtn, #bOkBtn, #bCloseModal").hide();
+
+        // Show buttons based on status
+        if(record.orderstatus == "0"){ 
+            $("#bApproveBtn").text("Approve").show();
+            $("#bRejectBtn").text("Reject").show();
+            $("#bCloseModal").show();
+        }
+        else if(record.orderstatus == "1"){ 
+            // $("#bApproveBtn").text("Deliver").show();
+            // $("#bRejectBtn").text("Reject").show();
+            $("#bApproveBtn").text("Approve").show();
+            $("#bRejectBtn").text("Reject").show();
+            $("#bCloseModal").show();
+        }
+        else if(record.orderstatus == "2" || record.orderstatus == "3"){ 
+            $("#bOkBtn").show();
+        }
+
+        $("#bookingModal").css("display","flex");
+    });
+
+    // Close modal
+    $("#bCloseModal, #bOkBtn").on("click", function(){
+        $("#bookingModal").hide();
+    });
+
+    // Approve/Reject/Deliver via AJAX
+    $("#bApproveBtn, #bRejectBtn").on("click", function(){
+        document.getElementById('loader').style.display = 'flex';
+        var action = $(this).text().toLowerCase(); // approve / reject / deliver
+        var bookingId = $("#bModalBookingId").val();
+        // var productId = $("#bModalProductId").val();
+        var UserCode = $("#bModalUserCode").val();
+        var OrderId = $("#bookingOrderId").val();
+
+        $.ajax({
+            url: "{% url 'update_booking_status' %}",
+            type: "POST",
+            data: {
+                "booking_id": bookingId,
+                "action": action,
+                "UserCode":UserCode,
+                "OrderId":OrderId,
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            },
+            success: function(resp){
+                if(resp.success){
+                    alert(resp.message);
+                    location.reload();
+                } else {
+                    alert("Error: " + resp.message);
+                    location.reload();
+                }
+            },
+            error: function(){
+                alert("Something went wrong.");
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

@@ -19,7 +19,7 @@ urlpatterns = [
     path('member-list/', views.member_list, name='member_list'),
     path('withdrawl-list/', views.withdrawal_list, name='withdrawl_list'),
     
-    ##############################################################################
+    #################################### Shekhar ##########################################
     path("get_transection_list/", views.get_transection_list, name="get_transection_list"),
     path("details_transection/<str:id>/", views.details_transection, name="details_transection"),
     path('buy_submit/', views.buy_submit, name='buy_submit'),
@@ -33,4 +33,15 @@ urlpatterns = [
     path('payment_update/', views.payment_update, name='payment_update'),
     path('change_pin/', views.change_pin, name='change_pin'),
     path('update_nominee/', views.update_nominee, name='update_nominee'),
+    
+    ##################################### Akash ############################################
+    
+    # path('member_transection_list/<str:user_code>/' , views.member_transection_list , name='member_transection_list'),
+    path('member_transection_list/' , views.member_transection_list , name='member_transection_list'),
+    path('member_withdrawl_list/', views.member_withdrawl_list , name='member_withdrawl_list'),
+    path('update_withdraw_status/', views.update_withdraw_status , name='update_withdraw_status'),
+    path('get_booking_list/' , views.get_booking_list , name='get_booking_list'),
+    path('update_booking_status/' , views.update_booking_status , name='update_booking_status'),
+    path('get_withdrawal_list/', views.get_withdrawal_list,name='get_withdrawal_list'),
+    path('member_booking_list/' , views.member_booking_list , name='member_booking_list'),
 ]

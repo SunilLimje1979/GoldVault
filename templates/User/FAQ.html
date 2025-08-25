@@ -12,15 +12,22 @@
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <link rel="manifest" href="{% static 'assets/__manifest.json' %}">
 </head>
 <body class="bg-white">
 
 <!-- Header -->
 <div class="appHeader">
     <div class="left">
-        <a href="{% url 'dashboard1' %}" class="headerButton goBack">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-        </a>
+        {% if request.session.user.UserType == '1' %}
+                <a href="{% url 'dashboard' %}" class="headerButton goBack">
+                    <ion-icon name="chevron-back-outline"></ion-icon>
+                </a>
+        {% else %}
+                <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+                    <ion-icon name="chevron-back-outline"></ion-icon>
+                </a>
+        {% endif %}
     </div>
     <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 500;">
        {{ faq_title}}

@@ -1,0 +1,183 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Member-Transactions</title>
+    <link rel="manifest" href="{% static 'assets/__manifest.json' %}">
+    <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'member_list' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 500;">
+        Transactions 
+    </div>
+    <!-- <div class="right">
+        <a href=" " class="headerButton">
+            <ion-icon class="icon" name="notifications-outline"></ion-icon>
+            <span class="badge badge-danger">4</span>
+            {% comment %} <span class="badge badge-danger">{{ notification_count }}</span> {% endcomment %}
+        </a>
+    </div> -->
+</div>
+
+
+<div id="appCapsule">
+
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <!-- Transactions -->
+        <div class="section mt-2">
+            {% comment %} <div class="section-heading" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="title">Transactions</h2>
+                <a href="{% url 'get_transection_list' %}" class="link" style="color:white; text-decoration:none;">View All</a>
+            </div> {% endcomment %}
+
+            <div class="transactions" id="transaction-list">
+                {% if member %}
+                    <div style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; 
+                                box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
+
+                        
+                        <div style="display:flex; align-items:center;">
+                            
+                            <img src="/static/assets/img/account.png" 
+                                alt="member" style="width:30px; height:30px; border-radius:50%; margin-right:12px;">
+
+                            
+                            <div>
+                                <div style="font-size:15px; font-weight:600; color:#333;">
+                                    {{ member.name }}
+                                </div>
+                                <div style="font-size:13px; color:#666;">
+                                    {{ member.mobileno }}
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div style="font-size:14px; font-weight:bold; color:#424043;">
+                            {{ member.Balance }} g
+                        </div>
+                    </div>
+                {%endif%}
+
+                {% if transactions %}
+                    {% for txn in transactions %}
+                        <div 
+                            onclick='openTxnModal({ 
+                                "TransactionType": "{{ txn.TransactionType }}",
+                                "TransactionStatus": "{{ txn.TransactionStatus }}",
+                                "Transactioneight": "{{ txn.Transactioneight }}",
+                                "TransactionRate": "{{ txn.TransactionRate }}",
+                                "TransactionAmount": "{{ txn.TransactionAmount }}",
+                                "DispplayDate": "{{ txn.DispplayDate }}",
+                                "TransactionOrderId": "{{ txn.TransactionOrderId }}"
+                            })' 
+
+                           style="background:#fff; border-radius:10px; padding:12px 15px; margin-bottom:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
+                            
+                            <!-- Left: icon + details -->
+                            <div style="display:flex; align-items:center;">
+                                <!-- Transaction type icon -->
+                                {% if txn.TransactionType == '+' %}
+                                    <img src="{% static 'assets/img/plus.png' %}" alt="credit" style="width:20px; height:20px; margin-right:10px;">
+                                {% else %}
+                                    <img src="{% static 'assets/img/minus.png' %}" alt="debit" style="width:20px; height:20px; margin-right:10px;">
+                                {% endif %}
+
+                                <div>
+                                    <!-- Display Date -->
+                                    <div style="font-size:14px; font-weight:bold; color:#333;">
+                                        {{ txn.DispplayDate }}
+                                    </div>
+                                    <!-- Status -->
+                                    <div style="font-size:12px; font-weight:600; text-transform:capitalize; color:#958d9e;">
+                                        {{ txn.TransactionStatus }}
+                                    </div>
+                                </div>
+                            </div>
+
+                           <!-- Right: Weight -->
+                            <div style="font-size:14px; font-weight:bold;
+                                {% if txn.TransactionType == '+' %}
+                                    color:#27ae60; /* green */
+                                {% else %}
+                                    color:#f39c12; /* orange */
+                                {% endif %}">
+                                {% if txn.TransactionType == '+' %}
+                                    + {{ txn.Transactioneight }} g
+                                {% else %}
+                                    - {{ txn.Transactioneight }} g
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No transactions available.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+<!-- Transaction Detail Modal -->
+<div id="txnModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; color:#000;">
+    
+    <div style="background:#fff; width:90%; max-width:400px; border-radius:12px; padding:15px; position:relative;">
+        <!-- Close button -->
+        <span onclick="closeTxnModal()" 
+              style="position:absolute; top:10px; right:15px; font-size:22px; cursor:pointer;">&times;</span>
+
+        <div id="txnDetailContent">
+            <!-- transaction detail content gets injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+function openTxnModal(txn) {
+    let content = `
+        <div style="text-align:center;">
+            <div style="display:inline-flex; padding:12px; border-radius:50%; background:${txn.TransactionType === '+' ? 'green' : 'orange'};">
+                <ion-icon name="${txn.TransactionType === '+' ? 'arrow-up-outline' : 'arrow-down-outline'}" style="color:white; font-size:22px;"></ion-icon>
+            </div>
+            <h3 style="margin-top:10px; font-family:Poppins, sans-serif;">
+                ${txn.TransactionType === '+' ? 'Gold Purchase' : 'Gold Withdraw'}
+            </h3>
+        </div>
+        <ul style="list-style:none; padding:0; margin-top:15px;">
+            <li><strong>Status:</strong> ${txn.TransactionStatus}</li>
+            <li><strong>Gold Weight:</strong> ${txn.Transactioneight} gm</li>
+            <li><strong>Rate Per 1 Gm:</strong> ₹ ${txn.TransactionRate}</li>
+            <li><strong>Total Amount:</strong> ₹ ${txn.TransactionAmount}</li>
+            <li><strong>Transaction Date:</strong> ${txn.DispplayDate}</li>
+            <li><strong>Order ID:</strong> ${txn.TransactionOrderId}</li>
+        </ul>
+    `;
+    document.getElementById("txnDetailContent").innerHTML = content;
+    document.getElementById("txnModal").style.display = "flex";
+}
+
+function closeTxnModal() {
+    document.getElementById("txnModal").style.display = "none";
+}
+</script>
+
+</body>
+</html>
