@@ -180,7 +180,38 @@
         });
     </script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                var msg = "{{ message|escapejs }}";
+                var tag = "{{ message.tags }}";
+
+                {% comment %} console.log(msg);
+                console.log(tag); {% endcomment %}
+                var alertType = "info";
+                var alertTitle = "Info"; 
+
+                if (tag.includes("success")) {
+                    alertType = "success";
+                    alertTitle = "Success!";
+                } else if (tag.includes("danger")) {
+                    alertType = "error";
+                    alertTitle = "Error!";
+                }
+
+                swal({
+                    title: alertTitle,
+                    text: msg,
+                    type: alertType,
+                    //timer: 5000,
+                    showConfirmButton: true
+                });
+            {% endfor %}
+        </script>
+    {% endif %}
 </body>
 
 </html>

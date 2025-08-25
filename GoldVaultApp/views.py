@@ -45,16 +45,19 @@ def user_required(view_func):
 def BASE(request):
     return render(request, 'base.html')
 
+############################# Forget Password ################################################
 def forgot_password(request):
     return render(request, "forgot_password.html")
 
+############################# Register ######################################
 def register(request):
     return render(request, "register.html")
 
+################################### Setting ############################################
 @user_required
 def setting(request):
     return render(request, "setting.html")
-
+####################################### Login ####################################################
 def login_view(request):
     if request.method == 'POST':
         mobile = request.POST.get('mobile')
@@ -76,27 +79,30 @@ def login_view(request):
             if response.status_code == 200:
                 data = response.json()
                 print(data)
+
                 if data.get("message_code") == 1000:
                     user = data["message_data"][0]
-                    request.session['user']=user
-                    print(user)
+                    request.session['user'] = user
+                    messages.success(request, data.get("message_text", "Login successful."))
+
                     user_status = int(user.get("UserType", -1))
                     user_code = user.get("UserCode")
 
-                    context = {
-                        "user": user
-                    }
+                    if user_status == 1:
+                        return redirect("dashboard/")
+                    elif user_status == 0:
+                        return redirect("dashboard1/")
+                    else:
+                        messages.error(request, "Unknown user type. Please contact support.")
+                        return redirect("login_view")
+                else:
+                    messages.error(request, data.get("message_text", "Invalid mobile number or PIN."))
+            else:
+                messages.error(request, f"HTTP Error {response.status_code}")
 
-                if user_status == 1:
-                    resp = redirect("dashboard/")  
-                    # resp.set_cookie("user_code", user_code)
-                    return resp
-                elif user_status == 0:
-                    resp = redirect("dashboard1/")
-                    # resp.set_cookie("user_code", user_code)
-                    return resp
         except Exception as e:
             print("Login Exception:", e)
+            messages.error(request, "Unable to login. Please try again later.")
 
     return render(request, "base.html")
 
@@ -390,7 +396,7 @@ def details_transection(request, id):
             else:
                 error = data.get("message_text", "No transactions found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Transactions API Exception: {str(e)}"
@@ -1046,6 +1052,7 @@ def register(request):
         mobile = request.POST.get('mobile_number')
         pin = request.POST.get('pin_number')
         name = request.POST.get('full_name')
+
         api_url = 'https://www.gyaagl.app/goldvault_api/register'
         payload = {
             "UserMobileNo": mobile,
@@ -1060,20 +1067,26 @@ def register(request):
             "Referer": "https://www.gyaagl.app/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }
+
         try:
             response = requests.post(api_url, json=payload, headers=headers, timeout=10)
             print("Status:", response.status_code)
             print("Response:", response.text)
+
             if response.status_code == 200:
                 data = response.json()
                 if data.get("message_code") == 1000:
                     user = data["message_data"][0]
+                    messages.success(request, data.get("message_text", "Registration successful."))
                     return render(request, "base.html", {"user": user})
                 else:
-                    print("Login failed:", data.get("message_text"))
+                    messages.error(request, data.get("message_text", "Registration failed."))
+            else:
+                messages.error(request, f"HTTP Error {response.status_code}")
 
         except Exception as e:
             print("Exception:", e)
+            messages.error(request, "Something went wrong. Please try again later.")
 
     return render(request, "register.html")
 ########################################## Update Sell Rate ######################################################
@@ -1425,7 +1438,7 @@ def member_transection_details(request, id):
             else:
                 error = data.get("message_text", "No transactions found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Transactions API Exception: {str(e)}"
@@ -1474,7 +1487,7 @@ def member_withdrawl_list(request):
             else:
                 error = data.get("message_text", "No withdrawls found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Withdrawl API Exception: {str(e)}"
@@ -1634,7 +1647,7 @@ def get_booking_list(request):
             else:
                 error = data.get("message_text", "No Bookings found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Booking API Exception: {str(e)}"
@@ -1778,7 +1791,7 @@ def get_withdrawal_list(request):
             else:
                 error = data.get("message_text", "No Withdrwals found.")
         else:
-            error = f"API Error: {response.status_code}"
+            error = f"{data.get("message_text")}"
 
     except Exception as e:
         error = f"Withdrawal API Exception: {str(e)}"
