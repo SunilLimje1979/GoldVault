@@ -1,6 +1,6 @@
 {
   "name": "GoldVault",
-  "short_name": "Vault",
+  "short_name": "Gold Vault",
   "start_url": "/GoldVault/",
   "display": "standalone",
   "background_color": "#000000",
