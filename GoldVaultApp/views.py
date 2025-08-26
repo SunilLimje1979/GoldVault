@@ -56,6 +56,12 @@ def setting(request):
     return render(request, "setting.html")
 
 def login_view(request):
+    # ClientCode = request.GET.get('ClientCode', '0')   # ✅ use clientid not client_id
+    # print("Client ID from URL:", ClientCode)
+
+    # # Store in session
+    # request.session['ClientCode'] = ClientCode  
+    
     if request.method == 'POST':
         mobile = request.POST.get('mobile')
         pin = request.POST.get('pin_number')
@@ -224,12 +230,15 @@ def dashboard_view(request):
 @member_required
 def dashboard1_view(request):
     user_code = request.session.get('user').get('UserCode')
+    # ClientCode = request.session.get('ClientCode', None)
+    # print("ClientID:", ClientCode)
     # print(user_code)
 
     api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
     payload = {
+        # "ClientCode": ClientCode,
+        "UserCode": user_code,
         "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
-        "UserCode": user_code
         # "UserCode": "14e2b5b6-7cb8-11f0-9769-525400ce20fd"
     }
     headers = {
