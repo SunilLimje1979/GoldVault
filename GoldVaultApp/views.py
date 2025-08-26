@@ -10,6 +10,65 @@ import pytz
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 
+################################## Manifest ####################################################
+# def manifest(request,code):
+#     # print("code",code)
+#     check_res= requests.post("https://drishtis.app/DrishticrmMaster/api/get_app_master_by_code/",{"app_code":code})
+#     # print(check_res.text)
+#     if(check_res.json().get("message_code")==1000):
+#         app_data= check_res.json().get("message_data")
+#     # print(request.session['app_data'])
+#     theme_color =app_data.get('theme_color', '#109787')  # Default to white
+#     logo_url = app_data.get('logo_url', "/static/assets/img/DrishticrmLogo.png")  # Default logo
+#     print(theme_color,logo_url)
+    
+#     manifest_data = {
+#         "name": app_data.get('app_name', 'CRM'),
+#         "short_name": app_data.get('app_short_name', 'CRM'),
+#         "description": f"{app_data.get('app_name', 'CRM')} Web App",
+#         "dir": "auto",
+#         "lang": "en-US",
+#         "start_url": f"/Drishticrm/login/?app_code={app_data.get('app_code')}",
+#         "display": "standalone",
+#         "orientation": "any",
+#         "background_color": "#FFFFFF",
+#         "theme_color": theme_color,
+#         "icons": [
+#             {
+#                 "src": logo_url,
+#                 "sizes": "512x512",
+#                 "type": "image/png"
+#             }
+#         ]
+#     }
+#     print(manifest_data)
+#     return JsonResponse(manifest_data)
+
+def manifest(request, code):
+    ClientCode= "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    
+    manifest_data = {
+        "name": "GoldVault",
+        "short_name": "Gold Vault",
+        "start_url": f"/GoldVault/?ClientCode={ClientCode}",  # ✅ dynamic
+        "display": "standalone",
+        "background_color": "#000000",
+        "theme_color": "#000000",
+        "orientation": "portrait",
+        "icons": [
+            {
+                "src": "/GoldVault/static/assets/img/icon/192x192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "/GoldVault/static/assets/img/icon/512x512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
+    return JsonResponse(manifest_data)
 ############## Decorator to check the user is loggined and it must Owner or not (UserType==1)
 def owner_required(view_func):
     @wraps(view_func)
@@ -60,6 +119,12 @@ def setting(request):
     return render(request, "setting.html")
 ####################################### Login ####################################################
 def login_view(request):
+    ClientCode = request.GET.get('ClientCode', '0')   # ✅ use clientid not client_id
+    print("Client ID from URL:", ClientCode)
+
+    # Store in session
+    request.session['ClientCode'] = ClientCode  
+    
     if request.method == 'POST':
         mobile = request.POST.get('mobile')
         pin = request.POST.get('pin_number')
@@ -230,15 +295,29 @@ def dashboard_view(request):
 ######################################## Dashboard 1 View ####################################################
 @member_required
 def dashboard1_view(request):
+    # user_code = request.session.get('user').get('UserCode')
+    # # print(user_code)
+
+    # api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
+    # payload = {
+    #     "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+    #     "UserCode": user_code
+    #     # "UserCode": "14e2b5b6-7cb8-11f0-9769-525400ce20fd"
+    # }
+    
     user_code = request.session.get('user').get('UserCode')
+    ClientCode = request.session.get('ClientCode', None)
+    print("ClientID:", ClientCode)
     # print(user_code)
 
     api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
     payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
-        "UserCode": user_code
+        "ClientCode": ClientCode,
+        "UserCode": user_code,
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
         # "UserCode": "14e2b5b6-7cb8-11f0-9769-525400ce20fd"
     }
+    
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",

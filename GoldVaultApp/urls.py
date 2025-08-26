@@ -3,6 +3,7 @@
 from django.urls import path,include
 from . import views
 urlpatterns = [
+    path('manifest.json/<str:code>', views.manifest, name='manifest'),
     path('', views.login_view, name='login'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('dashboard1/', views.dashboard1_view, name='dashboard1'),

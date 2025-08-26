@@ -16,7 +16,10 @@
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/icon/192x192.png' %}">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
-    <link rel="manifest" href="{% static 'assets/__manifest.json' %}">
+    {% comment %} <link rel="manifest" href="{% static 'assets/__manifest.json' %}"> {% endcomment %}
+    {% comment %} <link rel="manifest" href="/GoldVault/manifest.json/{{request.session.app_data.app_code}}"> {% endcomment %}
+    <link rel="manifest" href="{% url 'manifest' '5dc0abf7-85de-4ede-abff-e7d53e3804b7' %}">
+
 </head>
 <style>
     .stats-section .stat-box .title {
@@ -45,7 +48,7 @@
         </div>
         <div class="pageTitle">
             <!-- <img src="{% static 'assets/img/wallet_6592084.png' %}" alt="logo" class="logo" width="60px" height="70px"> -->
-            <span style="color: white; font-size: 20px; font-weight: bold;">Gold Vault1</span>
+            <span style="color: white; font-size: 20px; font-weight: bold;">Gold Vault1  </span>
         </div>
         <div class="right">
             <!-- Notifications -->
@@ -78,7 +81,7 @@
                 <!-- Balance -->
                 <div class="balance">
                     <div class="left">
-                        <span class="title">Gold Rate Per Gram</span>
+                        <span class="title">Gold Rate Per Gram {{request.session.ClientCode}}</span>
                         <h1 class="total">₹ {{ sell_rate }}</h1>
                     </div>
 
