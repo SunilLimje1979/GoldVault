@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('manifest.json/<str:code>', views.manifest, name='manifest'),
     path('', views.login_view, name='login'),
+    path('owner_registration/', views.owner_registration, name='owner_registration'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('dashboard1/', views.dashboard1_view, name='dashboard1'),
     path('logout/', views.logout_view, name='logout'),

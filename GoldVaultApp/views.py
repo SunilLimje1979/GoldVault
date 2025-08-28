@@ -9,6 +9,7 @@ from datetime import datetime
 import pytz
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
+from django.urls import reverse
 
 ################################## Manifest ####################################################
 # def manifest(request,code):
@@ -45,7 +46,12 @@ from decimal import Decimal
 #     return JsonResponse(manifest_data)
 
 def manifest(request, code):
-    ClientCode= "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # ClientCode= "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # ClientCode = request.session.get('ClientCode', None)
+    
+    # ClientCode = code or request.session.get('ClientCode', None)
+    ClientCode = code
+    print(ClientCode,"53")
     
     manifest_data = {
         "name": "GoldVault",
@@ -69,41 +75,168 @@ def manifest(request, code):
         ]
     }
     return JsonResponse(manifest_data)
+
 ############## Decorator to check the user is loggined and it must Owner or not (UserType==1)
+
+# def owner_required(view_func):
+#     @wraps(view_func)
+#     def wrapper(request, *args, **kwargs):
+#         user = request.session.get('user')
+#         if not user or user.get('UserType') != '1':
+#             request.session.flush()
+#             return redirect('login')
+#         return view_func(request, *args, **kwargs)
+#     return wrapper
+
 def owner_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         user = request.session.get('user')
-        if not user or user.get('UserType') != '1':
+        client_code = request.session.get('ClientCode')
+
+        # Check: must have user and must be owner type (UserType = '1')
+        if not user or str(user.get('UserType')) != '1':
+            code = client_code  # preserve before flushing
             request.session.flush()
-            return redirect('login')
+
+            login_url = reverse('login')
+            if code:
+                return redirect(f"{login_url}?ClientCode={code}")
+            return redirect(login_url)
+
         return view_func(request, *args, **kwargs)
     return wrapper
-
 ##################################### Member Required ########################################
+# def member_required(view_func):
+#     @wraps(view_func)
+#     def wrapper(request, *args, **kwargs):
+#         user = request.session.get('user')
+#         if not user or user.get('UserType') != '0':  # check for member type
+#             request.session.flush()
+#             return redirect('login')
+#         return view_func(request, *args, **kwargs)
+#     return wrapper
+
 def member_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         user = request.session.get('user')
-        if not user or user.get('UserType') != '0':  # check for member type
+        client_code = request.session.get('ClientCode')
+
+        # Check: must have user and must be member type (UserType = '0')
+        if not user or str(user.get('UserType')) != '0':
+            code = client_code  # keep ClientCode safe before flush
             request.session.flush()
-            return redirect('login')
+
+            login_url = reverse('login')
+            if code:
+                return redirect(f"{login_url}?ClientCode={code}")
+            return redirect(login_url)
+
         return view_func(request, *args, **kwargs)
     return wrapper
 
 ######################################################################################
+# def user_required(view_func):
+#     @wraps(view_func)
+#     def wrapper(request, *args, **kwargs):
+#         client_code = request.session.get('ClientCode', None)
+#         user = request.session.get('user')
+#         if not user:   # if user not in session
+#             request.session.flush()
+#             if client_code:
+#                 # Redirect with ClientCode as query string
+#                 return redirect(f"{reverse('login')}?ClientCode={client_code}")
+#             else:
+#                 return redirect('login')
+#             # return redirect('login')
+#         return view_func(request, *args, **kwargs)
+#     return wrapper
+
 def user_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         user = request.session.get('user')
-        if not user:   # if user not in session
+        client_code = request.session.get('ClientCode')
+
+        if not user:
+            # keep client_code safe before flushing
+            code = client_code  
+
             request.session.flush()
-            return redirect('login')
+
+            login_url = reverse('login')
+            if code:
+                return redirect(f"{login_url}?ClientCode={code}")
+            return redirect(login_url)
+
         return view_func(request, *args, **kwargs)
     return wrapper
+
 ##############################################################################
 def BASE(request):
-    return render(request, 'base.html')
+    client_code = request.session.get('ClientCode')
+    login_url = reverse('login')
+    if client_code:
+        return redirect(f"{login_url}?ClientCode={client_code}")
+    return redirect(login_url)
+        
+    # return render(request, 'base.html')
+############################# Forget Password ################################################
+def owner_registration(request):
+    if request.method == "POST":
+        data = {
+            "BusinessName": request.POST.get("BusinessName"),
+            "BusinessAddress": request.POST.get("BusinessAddress"),
+            "BusinessCityId": request.POST.get("BusinessCityId"),
+            "BusinessStateId": request.POST.get("BusinessStateId"),
+            "OwnerName": request.POST.get("OwnerName"),
+            "OwnerContact": request.POST.get("OwnerContact"),
+            "LoginPin": request.POST.get("LoginPin"),
+            "OwnerEmail": request.POST.get("OwnerEmail"),
+            "ShopPhotoURL": request.POST.get("ShopPhotoURL"),
+            "UPIID": request.POST.get("UPIID"),
+            "BankAccountName": request.POST.get("BankAccountName"),
+            "BankAccountNo": request.POST.get("BankAccountNo"),
+            "BankName": request.POST.get("BankName"),
+            "BranchName": request.POST.get("BranchName"),
+            "IFSCCode": request.POST.get("IFSCCode"),
+            "BranchAddress": request.POST.get("BranchAddress"),
+        }
+        print("Received Data:", data)  # ✅ Debugging
+
+        try:
+            api_url = "https://www.gyaagl.app/goldvault_api/clientregister"
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+
+            response = requests.post(api_url, json=data, headers=headers, timeout=15)
+            response_data = response.json()
+            print("API Response:", response_data)  # ✅ Debugging
+
+            if response_data.get("message_code") == 1000:
+                client_code = response_data["message_data"]["ClientCode"]
+
+                # ✅ Store in session
+                request.session['ClientCode'] = client_code
+
+                # ✅ Redirect with client code
+                redirect_url = f'https://gyaagl.club/GoldVault/?ClientCode="{client_code}"'
+                messages.success(request, "Registration successful!")
+                return redirect(redirect_url)
+            else:
+                error_msg = response_data.get("message_text", "Something went wrong!")
+                messages.error(request, f"Registration failed: {error_msg}")
+                return render(request, "owner_registration.html", {"form_data": data})
+
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f"API connection error: {str(e)}")
+            return render(request, "owner_registration.html", {"form_data": data})
+
+    return render(request, "owner_registration.html")
 
 ############################# Forget Password ################################################
 def forgot_password(request):
@@ -119,21 +252,28 @@ def setting(request):
     return render(request, "setting.html")
 ####################################### Login ####################################################
 def login_view(request):
-    ClientCode = request.GET.get('ClientCode', '0')   # ✅ use clientid not client_id
-    print("Client ID from URL:", ClientCode)
+    if request.method=='GET':
+        ClientCode = request.GET.get("ClientCode")   # ✅ use clientid not client_id
+        print("Client ID from URL:", ClientCode,"182")
 
-    # Store in session
-    request.session['ClientCode'] = ClientCode  
+        # Store in session
+        request.session['ClientCode'] = ClientCode  
+        print(request.session['ClientCode'],"186")
+        
+        return render(request, "base.html",{"ClientCode":ClientCode})
+        
     
     if request.method == 'POST':
+        client_code = request.session.get('ClientCode', None)
         mobile = request.POST.get('mobile')
         pin = request.POST.get('pin_number')
         api_url = 'https://www.gyaagl.app/goldvault_api/login'
         payload = {
             "UserMobileNo": mobile,
             "UserPin": pin,
-            "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+            "ClientCode": request.session.get('ClientCode', None)
         }
+        print(payload,"197")
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
@@ -160,7 +300,8 @@ def login_view(request):
                         return redirect("dashboard1/")
                     else:
                         messages.error(request, "Unknown user type. Please contact support.")
-                        return redirect("login_view")
+                        # return redirect("login_view")
+                        return redirect(f"{reverse('login')}?ClientCode={client_code}")
                 else:
                     messages.error(request, data.get("message_text", "Invalid mobile number or PIN."))
             else:
@@ -170,7 +311,7 @@ def login_view(request):
             print("Login Exception:", e)
             messages.error(request, "Unable to login. Please try again later.")
 
-    return render(request, "base.html")
+        return redirect(f"{reverse('login')}?ClientCode={client_code}")
 
 ##################################### Dashboard ################################################
 @owner_required
@@ -186,6 +327,9 @@ def dashboard_view(request):
     # user_code = request.COOKIES.get("user_code")
     user_code = request.session.get('user').get('UserCode')
     print(user_code)
+    ClientCode = request.session.get('ClientCode', None)
+    print("ClientID:", ClientCode)
+    
     # print("DEBUG: UserCode from cookie =>", user_code)
 
     # api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
@@ -233,7 +377,8 @@ def dashboard_view(request):
     sell_rate=0
     rate_api_url = "https://www.gyaagl.app/goldvault_api/getrate"
     rate_payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        "ClientCode": ClientCode
     }
     try:
         rate_response = requests.post(rate_api_url, json=rate_payload, headers=headers, timeout=10)
@@ -262,7 +407,8 @@ def dashboard_view(request):
     withdrawls={}
     getsummary_api_url = "https://www.gyaagl.app/goldvault_api/gettransummary"
     getsummary_payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        "ClientCode": ClientCode,
         "TransactionDate":date_str,
     }
     try:
@@ -355,7 +501,8 @@ def dashboard1_view(request):
 
     # ---------------- Get Rate API ----------------
     rate_api_url = "https://www.gyaagl.app/goldvault_api/getrate"
-    rate_payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
+    # rate_payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
+    rate_payload = {"ClientCode": ClientCode}
 
     try:
         rate_response = requests.post(rate_api_url, json=rate_payload, headers=headers, timeout=10)
@@ -371,7 +518,8 @@ def dashboard1_view(request):
     # ---------------- Get Transactions API ----------------
     transactions_api_url = "https://www.gyaagl.app/goldvault_api/gettransactions"
     trans_payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        "ClientCode": ClientCode,
         "UserCode": user_code
         # "UserCode": "14e2b5b6-7cb8-11f0-9769-525400ce20fd"
     }
@@ -398,13 +546,17 @@ def dashboard1_view(request):
 def get_transection_list(request):
     user_code = request.session.get('user').get('UserCode')
     print("DEBUG: UserCode =>", user_code)
+    
+    ClientCode = request.session.get('ClientCode', None)
+
 
     transactions = []
     error = None
 
     transactions_api_url = "https://www.gyaagl.app/goldvault_api/gettransactions"
     trans_payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",  # keep fixed if API requires
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",  # keep fixed if API requires
+        "ClientCode": ClientCode,
         "UserCode": user_code
         # "UserCode": "14e2b5b6-7cb8-11f0-9769-525400ce20fd"
     }
@@ -441,8 +593,9 @@ def get_transection_list(request):
 ########################################### Get Details Transection ###############################################
 @member_required
 def details_transection(request, id):
+    client_code = request.session.get('ClientCode', None)
     user_code = request.session.get('user').get('UserCode')
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
 
     transaction = None
     error = None
@@ -493,7 +646,9 @@ def details_transection(request, id):
 def get_transactions(request):
     # user_code = request.session.get('user').get('UserCode')
     user_code = request.session.get('user').get('UserCode')
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    client_code = request.session.get('ClientCode', None)
+
 
     headers = {
         "Accept": "application/json",
@@ -546,7 +701,9 @@ def buy_submit(request):
 
         user = request.session.get('user', {})
         user_code = user.get('UserCode')
-        client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        client_code = request.session.get('ClientCode', None)
+
 
         headers = {
             "Accept": "application/json",
@@ -616,7 +773,8 @@ def buy_submit(request):
 ##################################### Payment Update ##################################################
 def payment_update(request):
     if request.method == "POST":
-        client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        client_code = request.session.get('ClientCode', None)
         user_code = request.session.get('user').get('UserCode')  # get from session
         booking_id = request.POST.get("BookingId")
         order_id = request.POST.get("OrderId")
@@ -668,13 +826,20 @@ def payment_update(request):
 ########################################## Logout ##########################################################
 
 def logout_view(request): 
+    client_code = request.session.get('ClientCode', None)
+    print(client_code)
     request.session.flush()  
-    return redirect('login')
+    if client_code:
+        # Redirect with ClientCode in query string
+        return redirect(f"{reverse('login')}?ClientCode={client_code}")
+    else:
+        return redirect('login')
 ########################################### Change Pin ##############################################
 @user_required
 def change_pin(request): 
     user_code = request.session.get('user').get('UserCode')
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    client_code = request.session.get('ClientCode', None)
 
     print("User Code:", user_code) 
 
@@ -725,7 +890,8 @@ def change_pin(request):
 ######################################## Update Nominee ########################################
 @user_required
 def update_nominee(request): 
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    client_code = request.session.get('ClientCode', None)
     user_code = request.session.get('user').get('UserCode')
     # user_code = "14e2b5b6-7cb8-11f0-9769-525400ce20fd"  # replace with session later
 
@@ -819,6 +985,7 @@ def update_nominee(request):
 ############################################# Send Money ####################################################
 @member_required
 def send_money(request):
+    client_code = request.session.get('ClientCode', None)
     if request.method == 'POST':
         # user_code = request.COOKIES.get("user_code")
         user_code = request.session.get('user').get('UserCode')
@@ -836,9 +1003,11 @@ def send_money(request):
         print(withdraw_weight)
         
         api_url = 'https://www.gyaagl.app/goldvault_api/withdrawlrequest'  
+        
 
         payload = {
-            "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+            # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+            "ClientCode": client_code,
             "UserCode": user_code,
             "ProductDailyRate": 10000,            
             "WithdrawlWeight": withdraw_weight,
@@ -878,9 +1047,10 @@ import html
 @user_required
 def faq(request):
     user_code = request.session.get('user', {}).get('UserCode')
+    client_code = request.session.get('ClientCode', None)
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
 
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "2"}
+    payload = {"ClientCode": client_code, "TextType": "2"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -914,9 +1084,12 @@ def faq(request):
 @user_required
 def termsofuse(request):
     user_code = request.session.get('user', {}).get('UserCode')
+    client_code = request.session.get('ClientCode', None)
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
 
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "1"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "1"}
+    payload = {"ClientCode": client_code, "TextType": "1"}
+    
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -949,10 +1122,12 @@ def termsofuse(request):
 ########################################## Terms of Use ##################################################################
 @user_required
 def privacypolicy(request):
+    client_code = request.session.get('ClientCode', None)
     user_code = request.session.get('user', {}).get('UserCode')
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
 
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "3"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "3"}
+    payload = {"ClientCode": client_code, "TextType": "3"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -987,8 +1162,10 @@ def privacypolicy(request):
 def membershipagrement(request):
     user_code = request.session.get('user', {}).get('UserCode')
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
+    client_code = request.session.get('ClientCode', None)
 
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "4"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "4"}
+    payload = {"ClientCode": client_code, "TextType": "4"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -1023,8 +1200,10 @@ def membershipagrement(request):
 def support_contact(request):
     user_code = request.session.get('user', {}).get('UserCode')
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
+    client_code = request.session.get('ClientCode', None)
 
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "5"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "5"}
+    payload = {"ClientCode": client_code, "TextType": "5"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -1060,7 +1239,8 @@ def old_queries(request):
     user = request.session.get('user', {})
     user_code = user.get('UserCode')
     user_name = user.get('UserFullName')   # ✅ fetch name
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    client_code = request.session.get('ClientCode', None)
     api_url = "https://www.gyaagl.app/goldvault_api/listqueries"
 
     payload = {
@@ -1102,7 +1282,8 @@ def old_queries(request):
 @user_required
 def raise_query(request):
     user_code = request.session.get('user', {}).get('UserCode')
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    client_code = request.session.get('ClientCode', None)
 
     if request.method == "POST":
         query_subject = request.POST.get("QuerySubject")
@@ -1154,13 +1335,15 @@ def register(request):
         mobile = request.POST.get('mobile_number')
         pin = request.POST.get('pin_number')
         name = request.POST.get('full_name')
+        client_code = request.session.get('ClientCode', None)
 
         api_url = 'https://www.gyaagl.app/goldvault_api/register'
         payload = {
             "UserMobileNo": mobile,
             "UserPin": pin,
             "FullName": name,
-            "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+            "ClientCode": client_code
+            # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
         }
         headers = {
             "Accept": "application/json, text/plain, */*",
@@ -1180,7 +1363,12 @@ def register(request):
                 if data.get("message_code") == 1000:
                     user = data["message_data"][0]
                     messages.success(request, data.get("message_text", "Registration successful."))
-                    return render(request, "base.html", {"user": user})
+                    # return render(request, "base.html", {"user": user})
+                    login_url = reverse('login')
+                    if client_code:
+                        return redirect(f"{login_url}?ClientCode={client_code}")
+                    return redirect(login_url)
+                
                 else:
                     messages.error(request, data.get("message_text", "Registration failed."))
             else:
@@ -1197,9 +1385,11 @@ def update_sell_rate(request):
     if request.method == 'POST':
         sell_rate = request.POST.get('sell_rate')
         api_url = 'https://www.gyaagl.app/goldvault_api/dailyrate'  
+        client_code = request.session.get('ClientCode', None)
 
         payload = {
-            "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+            # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+            "ClientCode": client_code,
             "SellRate": sell_rate
         }
 
@@ -1243,10 +1433,12 @@ def update_sell_rate(request):
 
 def get_rate(request):
     api_url = "https://www.gyaagl.app/goldvault_api/getrate"
+    client_code = request.session.get('ClientCode', None)
+    payload = {"ClientCode": client_code}
 
-    payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
-    }
+    # payload = {
+    #     "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # }
 
     headers = {
         "Accept": "application/json, text/plain, */*",
@@ -1291,10 +1483,12 @@ def booking(request):
         product_daily_rate = request.POST.get('product_daily_rate', '9807')
         # user_code = "14e2b5b6-7cb8-11f0-9769-525400ce20fd"
         user_code = request.session.get('user', {}).get('UserCode')
+        client_code = request.session.get('ClientCode', None)
 
         api_url = 'https://www.gyaagl.app/goldvault_api/booking'
         payload = {
-            "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+            # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+            "ClientCode": client_code,
             "ProductDailyRate": product_daily_rate,
             "BookingAmount": amount,
             "BookingWeight": weight,
@@ -1333,9 +1527,11 @@ def get_balance(request):
     user_code = request.session.get('user').get('UserCode')
     print(user_code)
     api_url = "https://www.gyaagl.app/goldvault_api/getbalances"
+    client_code = request.session.get('ClientCode', None)
 
     payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        "ClientCode": client_code,
         "UserCode": user_code
     }
 
@@ -1374,7 +1570,9 @@ def get_balance(request):
 @owner_required
 def member_list(request):
     api_url = "https://www.gyaagl.app/goldvault_api/getmembers"
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
+    client_code = request.session.get('ClientCode', None)
+    payload = {"ClientCode": client_code}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -1402,7 +1600,9 @@ def member_list(request):
 ################################## Withdrawal List #####################################################
 def withdrawal_list(request):
     api_url = "https://www.gyaagl.app/goldvault_api/getwithdrawls"
-    payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
+    client_code = request.session.get('ClientCode', None)
+    payload = {"ClientCode": client_code}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"}
     headers = {
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json",
@@ -1461,6 +1661,7 @@ def member_transection_list(request):
     user_code = request.POST['UserCode']
     UserFullName = request.POST['UserFullName']
     UserMobileNo = request.POST['UserMobileNo']
+    client_code = request.session.get('ClientCode', None)
     # UserStatus = request.POST['UserStatus']
     Balance = request.POST['Balance']
     member = {"name":UserFullName,"mobileno":UserMobileNo,"Balance":Balance}
@@ -1470,7 +1671,8 @@ def member_transection_list(request):
 
     transactions_api_url = "https://www.gyaagl.app/goldvault_api/gettransactions"
     trans_payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",  # keep fixed if API requires
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",  # keep fixed if API requires
+        "ClientCode": client_code, 
         "UserCode": user_code
     }
     
@@ -1507,7 +1709,8 @@ def member_transection_list(request):
 @owner_required
 def member_transection_details(request, id):
     user_code = request.session.get('user').get('UserCode')
-    client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    # client_code = "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+    client_code = request.session.get('ClientCode', None)
 
     transaction = None
     error = None
@@ -1556,10 +1759,12 @@ def member_transection_details(request, id):
 def member_withdrawl_list(request):
     members = []
     error = None
+    client_code = request.session.get('ClientCode', None)
 
     api_url = "https://www.gyaagl.app/goldvault_api/getwithdrawls"
     payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        "ClientCode": client_code
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
     }
     headers = {
         "Accept": "application/json, text/plain, */*",
@@ -1626,6 +1831,7 @@ def member_withdrawl_list(request):
 @csrf_exempt   # remove if you already handle CSRF in template
 def update_withdraw_status(request):
     if request.method == "POST":
+        client_code = request.session.get('ClientCode', None)
         withdraw_id = request.POST.get("withdraw_id")
         action = request.POST.get("action")  # "approve" or "reject"
         usercode = request.POST.get("usercode")  # passed from template hidden field
@@ -1652,7 +1858,8 @@ def update_withdraw_status(request):
                 "UserCode": usercode,
                 "WithdrawalId": withdraw_id,
                 "WithdrawalStatus": withdraw_status,
-                "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+                "ClientCode": client_code,
+                # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
             }
 
             headers = {
@@ -1724,9 +1931,12 @@ def get_booking_list(request):
     bookings = {}
     error = None
 
+    client_code = request.session.get('ClientCode', None)
+    
     api_url = "https://www.gyaagl.app/goldvault_api/getcollection"
     payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        "ClientCode": client_code,
         "TransactionDate":date_str
     }
     headers = {
@@ -1766,6 +1976,7 @@ def get_booking_list(request):
 @csrf_exempt   # remove if you already handle CSRF in template
 def update_booking_status(request):
     if request.method == "POST":
+        client_code = request.session.get('ClientCode', None)
         booking_id = request.POST.get("booking_id")
         action = request.POST.get("action")  # "approve" or "reject"
         OrderId = request.POST.get("OrderId")  # passed from template hidden field
@@ -1796,7 +2007,8 @@ def update_booking_status(request):
                 "BookingId": booking_id,
                 "OrderStatus": booking_status,
                 "OrderId":OrderId,
-                "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+                # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+                "ClientCode": client_code,
             }
 
             headers = {
@@ -1866,10 +2078,12 @@ def get_withdrawal_list(request):
     print("864",date_str)
     Withdrawal = {}
     error = None
+    client_code = request.session.get('ClientCode', None)
 
     api_url = "https://www.gyaagl.app/goldvault_api/gettranwithdrawal"
     payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        # "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7",
+        "ClientCode": client_code,
         "TransactionDate":date_str
     }
     headers = {
@@ -1913,8 +2127,9 @@ def member_booking_list(request):
     error = None
 
     api_url = "https://www.gyaagl.app/goldvault_api/getorders" #booking orders
+    client_code = request.session.get('ClientCode', None)
     payload = {
-        "ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+        "ClientCode":client_code
     }
     headers = {
         "Accept": "application/json, text/plain, */*",

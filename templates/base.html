@@ -19,8 +19,9 @@
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     {% comment %} <link rel="manifest" href="{% static 'assets/__manifest.json' %}"> {% endcomment %}
     {% comment %} <link rel="manifest" href="/GoldVault/manifest.json/{{request.session.app_data.app_code}}"> {% endcomment %}
-    <link rel="manifest" href="{% url 'manifest' '5dc0abf7-85de-4ede-abff-e7d53e3804b7' %}">
-
+    {% comment %} <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}"> {% endcomment %}
+    <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}">
+    
 </head>
 
 <body>

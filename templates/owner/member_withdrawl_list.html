@@ -7,7 +7,7 @@
     <title>Withdrawals</title>
         {% comment %} <link rel="manifest" href="{% static 'assets/__manifest.json' %}"> {% endcomment %}
     {% comment %} <link rel="manifest" href="/GoldVault/manifest.json/{{request.session.app_data.app_code}}"> {% endcomment %}
-    <link rel="manifest" href="{% url 'manifest' '5dc0abf7-85de-4ede-abff-e7d53e3804b7' %}">
+    <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}">
 
     <meta name="keywords" content="bootstrap, wallet, banking, fintech mobile template, cordova, phonegap, mobile, html, responsive" />
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
