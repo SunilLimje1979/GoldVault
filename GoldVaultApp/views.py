@@ -510,7 +510,7 @@ def login_view(request):
                     request.session['ShopPhotoURL'] = client_info.get("ShopPhotoURL")
                     request.session['OwnerContact'] = client_info.get("OwnerContact")
 
-                    print("Stored in session:", request.session['DisplayName'], request.session['ShopPhotoURL'])
+                    # print("Stored in session:", request.session['DisplayName'], request.session['ShopPhotoURL'])
                 else:
                     error_msg = data.get("message_text", "Failed to fetch client details.")
                     messages.error(request, error_msg)
