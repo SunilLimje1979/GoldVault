@@ -42,7 +42,7 @@
             {% comment %} <span style="color: white; font-size: 20px; font-weight: bold;">Gold Vault</span> {% endcomment %}
             {% comment %} <span style="color: white; font-size: 20px; font-weight: bold;">{{request.session.DisplayName}}</span> {% endcomment %}
             <span style="color: white; font-size: 20px; font-weight: bold;">
-                {{ request.session.DisplayName|default:"Gold Vault" }}
+                {{ request.session.BusinessName|default:"Gold Vault" }}
             </span>
         </div>
         <div class="right">
