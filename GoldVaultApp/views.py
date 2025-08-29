@@ -362,7 +362,7 @@ def owner_registration(request):
             image.save(file_path, "PNG")
 
             # Public URL (adjust domain as needed)
-            shop_photo_url = f"https://GoldVault/static/assets/company_logo/{file_name}"
+            shop_photo_url = f"https://gyaagl.club/GoldVault/static/assets/company_logo/{file_name}"
 
         # Collect data
         data = {
