@@ -2555,7 +2555,7 @@ def create_shop_qr_pdf(client_code, contact_number):
     owner_name = client_data.get('OwnerName', 'Unknown')
     contact_number = client_data.get('OwnerContact', contact_number)
 
-    qr_url = f"https://gyaagl.club/GoldVault/?ClienttCode={client_code}"
+    qr_url = f"https://gyaagl.club/GoldVault/?ClientCode={client_code}"
 
     # Template path
     template_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF", "ShopQR2.pdf")
@@ -2637,7 +2637,7 @@ def generate_shop_qr_pdf(request,ClientCode):
     contact_number = "9876543210"
     # client_code = "675c347d-83d1-11f0-9769-525400ce20fd"
     client_code = ClientCode
-    qr_url = f"https://gyaagl.club/GoldVault/?ClienttCode={client_code}"
+    qr_url = f"https://gyaagl.club/GoldVault/?ClientCode={client_code}"
 
     if not ClientCode :
         return JsonResponse({"success": False, "message": "Client Code Missing"})
