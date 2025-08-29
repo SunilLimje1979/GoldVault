@@ -10,6 +10,17 @@ import pytz
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from django.urls import reverse
+import os
+import fitz  # PyMuPDF
+from django.conf import settings
+import io
+import qrcode
+from django.http import FileResponse, HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
+from PyPDF2 import PdfReader, PdfWriter
 
 ################################## Manifest ####################################################
 # def manifest(request,code):
@@ -2167,3 +2178,320 @@ def member_booking_list(request):
         "owner/member_booking_list.html",
         {"members": members, "error": error},
     )
+
+#######################QR PDF###################################
+def convert_pdf_to_images(pdf_path, output_folder,contact_number=1):
+    doc = fitz.open(pdf_path)
+    image_paths = []
+
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x for quality
+        image_path = os.path.join(output_folder, f"{contact_number}{page_num + 1}.png")
+        pix.save(image_path)
+        image_paths.append(image_path)
+
+    return image_paths
+
+
+# @user_required
+# def owner_qr(request):
+#     # Paths
+#     # pdf_name = "goldvaultQR.pdf"
+#     pdf_name = "shop1.pdf"
+#     pdf_path = os.path.join(settings.BASE_DIR, "static", "assets", "img", "QRPDF", pdf_name)
+#     img_dir = os.path.join(settings.BASE_DIR, "static", "assets", "img", "QRImage")
+
+#     # Ensure folder exists
+#     os.makedirs(img_dir, exist_ok=True)
+
+#     try:
+#         # Convert all PDF pages to images
+#         image_paths = convert_pdf_to_images(pdf_path, img_dir)
+#     except Exception as e:
+#         return render(request, "owner/owner_qr.html", {"error": f"PDF conversion failed: {str(e)}"})
+
+#     # Get static URLs for generated images
+#     image_urls = [f"assets/img/QRImage/{os.path.basename(path)}" for path in image_paths]
+
+#     return render(request, "owner/owner_qr.html", {
+#         "image_urls": image_urls,
+#         "pdf_url": f"assets/img/QRPDF/{pdf_name}",
+#     })
+
+@user_required
+def owner_qr(request):
+    client_code = request.session.get('ClientCode', None)
+    contact_number = request.session.get("user").get('UserMobileNo')  # must be stored in session earlier
+    print(client_code,contact_number)
+    if not client_code or not contact_number:
+        return render(request, "owner/owner_qr.html", {"error": "Client Code or Contact Number missing"})
+
+    pdf_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF")
+    img_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRImage")
+    os.makedirs(pdf_dir, exist_ok=True)
+    os.makedirs(img_dir, exist_ok=True)
+
+    pdf_path = os.path.join(pdf_dir, f"{contact_number}.pdf")
+    img_path = os.path.join(img_dir, f"{contact_number}1.png")
+
+    # --- CASE 1: Image already exists ---
+    if os.path.exists(img_path):
+        print("CASE 1: Image already exists")
+        image_urls = [f"assets/img/QRImage/{os.path.basename(img_path)}"]
+        return render(request, "owner/owner_qr.html", {"image_urls": image_urls,"pdf_url": f"assets/img/QRPDF/{contact_number}.pdf"})
+
+    # --- CASE 2: Image not present but PDF exists → convert ---
+    if os.path.exists(pdf_path):
+        print("CASE 2: Image not present but PDF exists → convert ")
+        try:
+            image_paths = convert_pdf_to_images(pdf_path, img_dir,contact_number)
+            image_urls = [f"assets/img/QRImage/{os.path.basename(p)}" for p in image_paths]
+            return render(request, "owner/owner_qr.html", {"image_urls": image_urls,"pdf_url": f"assets/img/QRPDF/{contact_number}.pdf"})
+        except Exception as e:
+            return render(request, "owner/owner_qr.html", {"error": f"PDF conversion failed: {str(e)}"})
+
+    # --- CASE 3: Neither exists → generate PDF then convert ---
+    try:
+        print("CASE 3: Neither exists → generate PDF then convert")
+        create_shop_qr_pdf(client_code, contact_number)  # save PDF
+        image_paths = convert_pdf_to_images(pdf_path, img_dir ,contact_number)
+        image_urls = [f"assets/img/QRImage/{os.path.basename(p)}" for p in image_paths]
+        return render(request, "owner/owner_qr.html", {"image_urls": image_urls,"pdf_url": f"assets/img/QRPDF/{contact_number}.pdf"})
+    except Exception as e:
+        return render(request, "owner/owner_qr.html", {"error": f"Failed to generate QR PDF: {str(e)}"})
+
+
+
+def create_shop_qr_pdf(client_code, contact_number):
+    """
+    Generate Shop QR PDF for given client_code & contact_number.
+    Save as contact_number.pdf in static/assets/img/QRPDF.
+    Return path to generated PDF.
+    """
+    print(client_code,contact_number)
+    # API call to fetch client details
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {"ClientCode": client_code}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    client_data = None
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        print(response.text)
+        data = response.json()
+        if data.get("message_code") == 1000 and data.get("message_data"):
+            client_data = data["message_data"][0]
+    except Exception as e:
+        raise Exception(f"Client API error: {str(e)}")
+
+    print(client_data)
+    # Fallback if no client data
+    business_name = client_data.get('BusinessName', 'Gold Jewellery')
+    business_address = client_data.get('BusinessAddress', 'Pune')
+    owner_name = client_data.get('OwnerName', 'Unknown')
+    contact_number = client_data.get('OwnerContact', contact_number)
+
+    qr_url = f"https://gyaagl.club/GoldVault/?ClienttCode={client_code}"
+
+    # Template path
+    template_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF", "ShopQR2.pdf")
+    existing_pdf = PdfReader(open(template_path, "rb"))
+    output = PdfWriter()
+
+    # Create overlay
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet, pagesize=A4)
+
+    # Logo
+    # logo_path = os.path.join(settings.BASE_DIR, "static", "assets", "img", "icon", "512x512.png")
+    # try:
+    #     can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+    # except:
+    #     pass
+
+    # --- Logo Selection Logic ---
+    logo_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "company_logo")
+    logo_path_contact = os.path.join(logo_dir, f"{contact_number}.png")
+    default_logo_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "icon", "512x512.png")
+
+    if os.path.exists(logo_path_contact):
+        logo_path = logo_path_contact
+    elif os.path.exists(default_logo_path):
+        logo_path = default_logo_path
+    else:
+        logo_path = None  # no logo available
+
+    # --- Draw Logo if available ---
+    if logo_path:
+        try:
+            can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+        except Exception as e:
+            print(f"Logo drawing failed: {e}")
+
+
+    # Business details
+    can.setFont("Helvetica-Bold", 16)
+    can.drawCentredString(370, 770, business_name)
+    can.setFont("Helvetica", 14)
+    can.drawCentredString(370, 750, business_address)
+    can.drawCentredString(370, 730, owner_name)
+    can.drawCentredString(370, 710, contact_number)
+
+    # QR code
+    qr_img = qrcode.make(qr_url)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+    can.drawImage(ImageReader(qr_buffer), 200, 357, width=200, height=200, preserveAspectRatio=True, mask="auto")
+
+    can.save()
+    packet.seek(0)
+
+    # Merge
+    overlay_pdf = PdfReader(packet)
+    page = existing_pdf.pages[0]
+    page.merge_page(overlay_pdf.pages[0])
+    output.add_page(page)
+
+    # Save to file
+    pdf_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF")
+    os.makedirs(pdf_dir, exist_ok=True)
+    pdf_path = os.path.join(pdf_dir, f"{contact_number}.pdf")
+
+    with open(pdf_path, "wb") as f:
+        output.write(f)
+
+    return pdf_path
+
+##################to genrate pdf and see on browser###############
+def generate_shop_qr_pdf(request,ClientCode):
+    print("ClientCode",ClientCode)
+    # --- Demo Data (replace dynamically later) ---
+    business_name = "Demo Shop Pvt Ltd"
+    business_address = "123 Market Street, Pune, India"
+    owner_name = "John Doe"
+    contact_number = "9876543210"
+    # client_code = "675c347d-83d1-11f0-9769-525400ce20fd"
+    client_code = ClientCode
+    qr_url = f"https://gyaagl.club/GoldVault/?ClienttCode={client_code}"
+
+    if not ClientCode :
+        return JsonResponse({"success": False, "message": "Client Code Missing"})
+
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {
+        "ClientCode": client_code
+    }
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        error = None
+        client_data=None
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        print("DEBUG: Client Details API response:", response.text)
+        data = response.json()
+        if data.get("message_code") == 1000:
+            # data = response.json()
+            if data.get("message_code") == 1000 and data.get("message_data"):
+                client_data = data["message_data"][0]   # ✅ store booking list in bookings
+            else:
+                error = data.get("message_text", "No Client Data found.")
+        else:
+            error = f"{data.get("message_text")}"
+
+    except Exception as e:
+        error = f"Client Details API Exception: {str(e)}"
+        print(error)
+
+    if not client_data:
+        print(client_data)
+        return JsonResponse({"success": False, "message": error})
+    
+    
+    print(client_data)
+    business_name = client_data.get('BusinessName','Gold Jewellery')
+    business_address = client_data.get('BusinessAddress','Pune')
+    owner_name = client_data.get('OwnerName','Unknown')
+    contact_number = client_data.get('OwnerContact','1234567890')
+    
+    # --- Load Template (⚠️ don't close file) ---
+    template_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF", "ShopQR2.pdf")
+    existing_pdf = PdfReader(open(template_path, "rb"))   # ✅ same as your authorization logic
+    output = PdfWriter()
+
+    # --- Create Overlay ---
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet, pagesize=A4)
+
+    # Insert Shop Logo (top-left block)
+    # logo_path = os.path.join(settings.BASE_DIR, "static", "assets", "img","icon", "512x512.png")
+    # try:
+    #     can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+    # except:
+    #     pass
+
+    # --- Logo Selection Logic ---
+    logo_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "company_logo")
+    logo_path_contact = os.path.join(logo_dir, f"{contact_number}.png")
+    default_logo_path = os.path.join(settings.BASE_DIR, "static", "assets", "img", "icon", "512x512.png")
+
+    if os.path.exists(logo_path_contact):
+        logo_path = logo_path_contact
+    elif os.path.exists(default_logo_path):
+        logo_path = default_logo_path
+    else:
+        logo_path = None  # no logo available
+
+    # --- Draw Logo if available ---
+    if logo_path:
+        try:
+            can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+        except Exception as e:
+            print(f"Logo drawing failed: {e}")
+
+
+    # Business details beside logo
+    can.setFont("Helvetica-Bold", 16)
+    can.drawCentredString(370, 770, business_name)
+
+    can.setFont("Helvetica", 14)
+    can.drawCentredString(370, 750, business_address)
+    can.drawCentredString(370, 730, owner_name)
+    can.drawCentredString(370, 710, contact_number)
+
+    # QR Code in center
+    qr_img = qrcode.make(qr_url)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+    can.drawImage(ImageReader(qr_buffer), 200, 357, width=200, height=200, preserveAspectRatio=True, mask="auto")
+
+    can.save()
+    packet.seek(0)
+
+    # --- Merge Overlay with Template ---
+    overlay_pdf = PdfReader(packet)
+    page = existing_pdf.pages[0]
+    page.merge_page(overlay_pdf.pages[0])
+    output.add_page(page)
+
+    # --- Save Final PDF ---
+    final_pdf = io.BytesIO()
+    output.write(final_pdf)
+    final_pdf.seek(0)
+
+    # --- Return File ---
+    return FileResponse(final_pdf, content_type="application/pdf")

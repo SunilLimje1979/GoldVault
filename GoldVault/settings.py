@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-9h&@2j@(ida_e939isf5q(m6m#_s7@w*(cfw2s+s5*$l#3i0tc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','vgold.app','192.168.162.44','192.168.26.44']
+ALLOWED_HOSTS = ['*','vgold.app','192.168.162.44','192.168.26.44','192.168.0.3']
 
 
 # Application definition

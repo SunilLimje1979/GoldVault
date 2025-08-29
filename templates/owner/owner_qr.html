@@ -1,0 +1,53 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MY-QR</title>
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    {% comment %} <link rel="manifest" href="{% static 'assets/__manifest.json' %}"> {% endcomment %}
+    {% comment %} <link rel="manifest" href="/GoldVault/manifest.json/{{request.session.app_data.app_code}}"> {% endcomment %}
+    <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}">
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'dashboard' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:Poppins,sans-serif;">MY-QR</div>
+    <div class="right"></div>
+</div>
+
+<div id="appCapsule">
+    {% if error %}
+        <div class="section mt-2">
+            <div class="alert alert-danger">{{ error }}</div>
+        </div>
+    {% else %}
+        <div class="section mt-2 text-center">
+            {% for image_url in image_urls %}
+                <img src="{% static image_url %}" 
+                     alt="QR PDF Page {{ forloop.counter }}" 
+                     style="max-width:100%; border:1px solid #ccc; border-radius:8px; margin-bottom:10px;">
+            {% endfor %}
+            <div class="mt-3">
+                <a href="{% static pdf_url %}" class="btn btn-primary" style="background: linear-gradient(95.25deg, #edc88f, #edc88f 104.24%) !important;color: #000 !important;border-color: #edc88f !important;font-weight: bold; " download>
+                    Download PDF
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
