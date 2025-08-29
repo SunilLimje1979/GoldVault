@@ -12,9 +12,14 @@
         {% comment %} <link rel="manifest" href="{% static 'assets/__manifest.json' %}"> {% endcomment %}
     {% comment %} <link rel="manifest" href="/GoldVault/manifest.json/{{request.session.app_data.app_code}}"> {% endcomment %}
     <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}">
+    <script src="{% static 'assets/js/loader.js' %}"></script>
 
 </head>
 <body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
 
 <div class="appHeader">
     <div class="left">

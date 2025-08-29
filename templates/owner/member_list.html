@@ -13,8 +13,14 @@
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <script src="{% static 'assets/js/loader.js' %}"></script>
+
 </head>
 <body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
 
 <div class="appHeader">
     <div class="left">
