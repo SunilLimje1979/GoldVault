@@ -48,7 +48,11 @@
         </div>
         <div class="pageTitle">
             <!-- <img src="{% static 'assets/img/wallet_6592084.png' %}" alt="logo" class="logo" width="60px" height="70px"> -->
-            <span style="color: white; font-size: 20px; font-weight: bold;">Gold Vault1  </span>
+            {% comment %} <span style="color: white; font-size: 20px; font-weight: bold;">Gold Vault1  </span> {% endcomment %}
+            {% comment %} <span style="color: white; font-size: 20px; font-weight: bold;">{{request.session.DisplayName}}</span> {% endcomment %}
+            <span style="color: white; font-size: 20px; font-weight: bold;">
+                {{ request.session.DisplayName|default:"Gold Vault" }}
+            </span>
         </div>
         <div class="right">
             <!-- Notifications -->

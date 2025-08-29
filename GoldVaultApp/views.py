@@ -10,7 +10,17 @@ import pytz
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from django.urls import reverse
-
+import os
+import fitz  # PyMuPDF
+from django.conf import settings
+import io
+import qrcode
+from django.http import FileResponse, HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
+from PyPDF2 import PdfReader, PdfWriter
 ################################## Manifest ####################################################
 # def manifest(request,code):
 #     # print("code",code)
@@ -45,37 +55,102 @@ from django.urls import reverse
 #     print(manifest_data)
 #     return JsonResponse(manifest_data)
 
+# def manifest(request, code):
+#     # ClientCode= "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
+#     # ClientCode = request.session.get('ClientCode', None)
+    
+#     # ClientCode = code or request.session.get('ClientCode', None)
+#     ClientCode = code
+#     print(ClientCode,"53")
+    
+#     manifest_data = {
+#         "name": "GoldVault",
+#         "short_name": "Gold Vault",
+#         "start_url": f"/GoldVault/?ClientCode={ClientCode}",  # ✅ dynamic
+#         "display": "standalone",
+#         "background_color": "#000000",
+#         "theme_color": "#000000",
+#         "orientation": "portrait",
+#         "icons": [
+#             {
+#                 "src": "/GoldVault/static/assets/img/icon/192x192.png",
+#                 "sizes": "192x192",
+#                 "type": "image/png"
+#             },
+#             {
+#                 "src": "/GoldVault/static/assets/img/icon/512x512.png",
+#                 "sizes": "512x512",
+#                 "type": "image/png"
+#             }
+#         ]
+#     }
+#     return JsonResponse(manifest_data)
+
 def manifest(request, code):
-    # ClientCode= "5dc0abf7-85de-4ede-abff-e7d53e3804b7"
-    # ClientCode = request.session.get('ClientCode', None)
-    
-    # ClientCode = code or request.session.get('ClientCode', None)
     ClientCode = code
-    print(ClientCode,"53")
-    
+    print("ClientCode:", ClientCode)
+
+    # Call API to get client info
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+    payload = {"ClientCode": ClientCode}
+
+    # Defaults in case API fails
+    business_name = "GoldVault"
+    display_name = "Gold Vault"
+    shop_logo = "/static/assets/img/icon/512x512.png"
+
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        print("API Response:", data)
+
+        if data.get("message_code") == 1000 and data.get("message_data"):
+            client_info = data["message_data"][0]
+
+            # ✅ Use BusinessName & DisplayName
+            business_name = client_info.get("BusinessName") or business_name
+            display_name = client_info.get("DisplayName") or business_name
+
+            # ✅ Use ShopPhotoURL if present
+            if client_info.get("ShopPhotoURL"):
+                shop_logo = client_info["ShopPhotoURL"]
+
+    except requests.exceptions.RequestException as e:
+        print("Error calling API:", e)
+    except ValueError:
+        print("Error parsing API response")
+
+    # Build manifest
     manifest_data = {
-        "name": "GoldVault",
-        "short_name": "Gold Vault",
-        "start_url": f"/GoldVault/?ClientCode={ClientCode}",  # ✅ dynamic
+        "name": business_name,
+        # "short_name": display_name,
+        "short_name": business_name,
+        "start_url": f"/GoldVault/?ClientCode={ClientCode}",  # dynamic
         "display": "standalone",
         "background_color": "#000000",
-        "theme_color": "#000000",
+        "theme_color": "#000000",   # 🚨 not using API ThemeColor
         "orientation": "portrait",
         "icons": [
             {
-                "src": "/GoldVault/static/assets/img/icon/192x192.png",
+                "src": shop_logo,
                 "sizes": "192x192",
                 "type": "image/png"
             },
             {
-                "src": "/GoldVault/static/assets/img/icon/512x512.png",
+                "src": shop_logo,
                 "sizes": "512x512",
                 "type": "image/png"
             }
         ]
     }
-    return JsonResponse(manifest_data)
 
+    return JsonResponse(manifest_data)
 ############## Decorator to check the user is loggined and it must Owner or not (UserType==1)
 
 # def owner_required(view_func):
@@ -183,18 +258,123 @@ def BASE(request):
         
     # return render(request, 'base.html')
 ############################# Forget Password ################################################
+# def owner_registration(request):
+#     if request.method == "POST":
+#         data = {
+#             "BusinessName": request.POST.get("BusinessName"),
+#             "BusinessAddress": request.POST.get("BusinessAddress"),
+#             "BusinessCityId": request.POST.get("BusinessCityId"),
+#             "BusinessStateId": request.POST.get("BusinessStateId"),
+#             "OwnerName": request.POST.get("OwnerName"),
+#             "OwnerContact": request.POST.get("OwnerContact"),
+#             "LoginPin": request.POST.get("LoginPin"),
+#             "OwnerEmail": request.POST.get("OwnerEmail"),
+#             "ShopPhotoURL": request.POST.get("ShopPhotoURL"),
+#             "UPIID": request.POST.get("UPIID"),
+#             "BankAccountName": request.POST.get("BankAccountName"),
+#             "BankAccountNo": request.POST.get("BankAccountNo"),
+#             "BankName": request.POST.get("BankName"),
+#             "BranchName": request.POST.get("BranchName"),
+#             "IFSCCode": request.POST.get("IFSCCode"),
+#             "BranchAddress": request.POST.get("BranchAddress"),
+#         }
+#         print("Received Data:", data)  # ✅ Debugging
+
+#         try:
+#             api_url = "https://www.gyaagl.app/goldvault_api/clientregister"
+#             headers = {
+#                 "Accept": "application/json",
+#                 "Content-Type": "application/json",
+#                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+#             }
+
+#             response = requests.post(api_url, json=data, headers=headers, timeout=15)
+#             response_data = response.json()
+#             print("API Response:", response_data)  # ✅ Debugging
+
+#             if response_data.get("message_code") == 1000:
+#                 client_code = response_data["message_data"]["ClientCode"]
+
+#                 # ✅ Store in session
+#                 request.session['ClientCode'] = client_code
+
+#                 # ✅ Redirect with client code
+#                 redirect_url = f'https://gyaagl.club/GoldVault/?ClientCode="{client_code}"'
+#                 messages.success(request, "Registration successful!")
+#                 return redirect(redirect_url)
+#             else:
+#                 error_msg = response_data.get("message_text", "Something went wrong!")
+#                 messages.error(request, f"Registration failed: {error_msg}")
+#                 return render(request, "owner_registration.html", {"form_data": data})
+
+#         except requests.exceptions.RequestException as e:
+#             messages.error(request, f"API connection error: {str(e)}")
+#             return render(request, "owner_registration.html", {"form_data": data})
+
+#     return render(request, "owner_registration.html")
+
+import os
+from django.conf import settings
+from PIL import Image
 def owner_registration(request):
+    states = []  # default empty
+
+    # 🔹 Fetch states from API when page loads (GET request)
+    try:
+        api_url = "https://www.gyaagl.app/goldvault_api/liststates"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        payload = {"CountryId": "101"}
+        response = requests.post(api_url, json=payload, headers=headers, timeout=15)
+        response_data = response.json()
+        # print(response_data)
+
+        if response_data.get("message_code") == 1000:
+            states = response_data.get("message_data", [])
+    except Exception as e:
+        print("Error fetching states:", e)
+        messages.error(request, "Could not load states list.")
+        
     if request.method == "POST":
+        business_name = request.POST.get("BusinessName")
+        owner_contact = request.POST.get("OwnerContact")
+        uploaded_file = request.FILES.get("ShopPhotoURL")
+
+        shop_photo_url = None
+
+        if uploaded_file:
+            # Always save as PNG
+            safe_business_name = business_name.replace(" ", "_").lower()
+            # img_directory = os.path.join(settings.BASE_DIR, 'static', 'assets', 'company_logo')
+            img_directory = os.path.join(settings.BASE_DIR, 'staticfiles', 'assets', 'company_logo')
+            os.makedirs(img_directory, exist_ok=True)
+
+            # File name always .png
+            file_name = f"{owner_contact}.png"
+            file_path = os.path.join(img_directory, file_name)
+
+            # Open uploaded image with Pillow and convert to PNG
+            image = Image.open(uploaded_file)
+            image = image.convert("RGBA")  # ensure proper format
+            image.save(file_path, "PNG")
+
+            # Public URL (adjust domain as needed)
+            shop_photo_url = f"https://GoldVault/static/assets/company_logo/{file_name}"
+
+        # Collect data
         data = {
-            "BusinessName": request.POST.get("BusinessName"),
+            "BusinessName": business_name,
             "BusinessAddress": request.POST.get("BusinessAddress"),
             "BusinessCityId": request.POST.get("BusinessCityId"),
             "BusinessStateId": request.POST.get("BusinessStateId"),
             "OwnerName": request.POST.get("OwnerName"),
-            "OwnerContact": request.POST.get("OwnerContact"),
+            "OwnerContact": owner_contact,
             "LoginPin": request.POST.get("LoginPin"),
             "OwnerEmail": request.POST.get("OwnerEmail"),
-            "ShopPhotoURL": request.POST.get("ShopPhotoURL"),
+            "ShopPhotoURL": shop_photo_url,   # final image URL
             "UPIID": request.POST.get("UPIID"),
             "BankAccountName": request.POST.get("BankAccountName"),
             "BankAccountNo": request.POST.get("BankAccountNo"),
@@ -203,19 +383,36 @@ def owner_registration(request):
             "IFSCCode": request.POST.get("IFSCCode"),
             "BranchAddress": request.POST.get("BranchAddress"),
         }
-        print("Received Data:", data)  # ✅ Debugging
+
+        print("Received Data:", data)
+
+    # if request.method == "POST":
+    #     data = {
+    #         "BusinessName": request.POST.get("BusinessName"),
+    #         "BusinessAddress": request.POST.get("BusinessAddress"),
+    #         "BusinessCityId": request.POST.get("BusinessCityId"),
+    #         "BusinessStateId": request.POST.get("BusinessStateId"),
+    #         "OwnerName": request.POST.get("OwnerName"),
+    #         "OwnerContact": request.POST.get("OwnerContact"),
+    #         "LoginPin": request.POST.get("LoginPin"),
+    #         "OwnerEmail": request.POST.get("OwnerEmail"),
+    #         # "ShopPhotoURL": request.POST.get("ShopPhotoURL"),
+    #         "ShopPhotoURL" : request.FILES.get("ShopPhotoURL"),
+    #         "UPIID": request.POST.get("UPIID"),
+    #         "BankAccountName": request.POST.get("BankAccountName"),
+    #         "BankAccountNo": request.POST.get("BankAccountNo"),
+    #         "BankName": request.POST.get("BankName"),
+    #         "BranchName": request.POST.get("BranchName"),
+    #         "IFSCCode": request.POST.get("IFSCCode"),
+    #         "BranchAddress": request.POST.get("BranchAddress"),
+    #     }
+    #     print("Received Data:", data)
 
         try:
             api_url = "https://www.gyaagl.app/goldvault_api/clientregister"
-            headers = {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-            }
-
             response = requests.post(api_url, json=data, headers=headers, timeout=15)
             response_data = response.json()
-            print("API Response:", response_data)  # ✅ Debugging
+            print("API Response:", response_data)
 
             if response_data.get("message_code") == 1000:
                 client_code = response_data["message_data"]["ClientCode"]
@@ -224,20 +421,43 @@ def owner_registration(request):
                 request.session['ClientCode'] = client_code
 
                 # ✅ Redirect with client code
-                redirect_url = f'https://gyaagl.club/GoldVault/?ClientCode="{client_code}"'
+                redirect_url = f'https://gyaagl.club/GoldVault/?ClientCode={client_code}'
                 messages.success(request, "Registration successful!")
                 return redirect(redirect_url)
             else:
                 error_msg = response_data.get("message_text", "Something went wrong!")
                 messages.error(request, f"Registration failed: {error_msg}")
-                return render(request, "owner_registration.html", {"form_data": data})
-
         except requests.exceptions.RequestException as e:
             messages.error(request, f"API connection error: {str(e)}")
-            return render(request, "owner_registration.html", {"form_data": data})
 
-    return render(request, "owner_registration.html")
+    return render(request, "owner_registration.html", {"states": states})
 
+def get_cities(request):
+    if request.method == "POST":
+        import json
+        body = json.loads(request.body.decode("utf-8"))
+        state_id = body.get("StateId")
+        
+        # print("DEBUG: StateId =>", state_id)
+
+        url = "https://www.gyaagl.app/goldvault_api/listcities"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        payload = {
+            "CountryId": 101,
+            "StateId": state_id
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response_data = response.json()
+
+        # # 🔹 Debug print full response
+        # print("DEBUG: API Response =>", response_data)
+
+        return JsonResponse(response_data)
 ############################# Forget Password ################################################
 def forgot_password(request):
     return render(request, "forgot_password.html")
@@ -252,16 +472,61 @@ def setting(request):
     return render(request, "setting.html")
 ####################################### Login ####################################################
 def login_view(request):
-    if request.method=='GET':
-        ClientCode = request.GET.get("ClientCode")   # ✅ use clientid not client_id
-        print("Client ID from URL:", ClientCode,"182")
+    # if request.method=='GET':
+    #     ClientCode = request.GET.get("ClientCode")   # ✅ use clientid not client_id
+    #     print("Client ID from URL:", ClientCode,"182")
 
-        # Store in session
+    #     # Store in session
+    #     request.session['ClientCode'] = ClientCode  
+    #     print(request.session['ClientCode'],"186")
+    #     return render(request, "base.html",{"ClientCode":ClientCode})
+    
+    if request.method == 'GET':
+        ClientCode = request.GET.get("ClientCode")
+        print("Client ID from URL:", ClientCode, "182")
         request.session['ClientCode'] = ClientCode  
-        print(request.session['ClientCode'],"186")
-        
-        return render(request, "base.html",{"ClientCode":ClientCode})
-        
+
+        if ClientCode:
+            # API call
+            api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+            payload = {"ClientCode": ClientCode}
+
+            try:
+                response = requests.post(api_url, json=payload, headers=headers)
+                response.raise_for_status()  # ensure HTTP 200 OK
+                data = response.json()
+                print("API Response:", data)
+
+                if data.get("message_code") == 1000 and data.get("message_data"):
+                    client_info = data["message_data"][0]
+
+                    # Save in session
+                    request.session['BusinessName'] = client_info.get("BusinessName")
+                    request.session['ShopPhotoURL'] = client_info.get("ShopPhotoURL")
+
+                    print("Stored in session:", request.session['DisplayName'], request.session['ShopPhotoURL'])
+                else:
+                    error_msg = data.get("message_text", "Failed to fetch client details.")
+                    messages.error(request, error_msg)
+                    print("API error:", error_msg)
+
+            except requests.exceptions.RequestException as e:
+                print("Error calling API:", e)
+                messages.error(request, "Unable to connect to client info service. Please try again later.")
+            except ValueError:
+                print("Error parsing API response")
+                messages.error(request, "Invalid response from client info service.")
+
+        return render(request, "base.html", {
+            "ClientCode": ClientCode,
+            "BusinessName": request.session.get("BusinessName"),
+            "ShopPhotoURL": request.session.get("ShopPhotoURL")
+        })
     
     if request.method == 'POST':
         client_code = request.session.get('ClientCode', None)
@@ -2167,3 +2432,322 @@ def member_booking_list(request):
         "owner/member_booking_list.html",
         {"members": members, "error": error},
     )
+    
+    
+########################################################################################
+#######################QR PDF###################################
+def convert_pdf_to_images(pdf_path, output_folder,contact_number=1):
+    doc = fitz.open(pdf_path)
+    image_paths = []
+
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x for quality
+        image_path = os.path.join(output_folder, f"{contact_number}{page_num + 1}.png")
+        pix.save(image_path)
+        image_paths.append(image_path)
+
+    return image_paths
+
+
+# @user_required
+# def owner_qr(request):
+#     # Paths
+#     # pdf_name = "goldvaultQR.pdf"
+#     pdf_name = "shop1.pdf"
+#     pdf_path = os.path.join(settings.BASE_DIR, "static", "assets", "img", "QRPDF", pdf_name)
+#     img_dir = os.path.join(settings.BASE_DIR, "static", "assets", "img", "QRImage")
+
+#     # Ensure folder exists
+#     os.makedirs(img_dir, exist_ok=True)
+
+#     try:
+#         # Convert all PDF pages to images
+#         image_paths = convert_pdf_to_images(pdf_path, img_dir)
+#     except Exception as e:
+#         return render(request, "owner/owner_qr.html", {"error": f"PDF conversion failed: {str(e)}"})
+
+#     # Get static URLs for generated images
+#     image_urls = [f"assets/img/QRImage/{os.path.basename(path)}" for path in image_paths]
+
+#     return render(request, "owner/owner_qr.html", {
+#         "image_urls": image_urls,
+#         "pdf_url": f"assets/img/QRPDF/{pdf_name}",
+#     })
+
+@user_required
+def owner_qr(request):
+    client_code = request.session.get('ClientCode', None)
+    contact_number = request.session.get("user").get('UserMobileNo')  # must be stored in session earlier
+    print(client_code,contact_number)
+    if not client_code or not contact_number:
+        return render(request, "owner/owner_qr.html", {"error": "Client Code or Contact Number missing"})
+
+    pdf_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF")
+    img_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRImage")
+    os.makedirs(pdf_dir, exist_ok=True)
+    os.makedirs(img_dir, exist_ok=True)
+
+    pdf_path = os.path.join(pdf_dir, f"{contact_number}.pdf")
+    img_path = os.path.join(img_dir, f"{contact_number}1.png")
+
+    # --- CASE 1: Image already exists ---
+    if os.path.exists(img_path):
+        print("CASE 1: Image already exists")
+        image_urls = [f"assets/img/QRImage/{os.path.basename(img_path)}"]
+        return render(request, "owner/owner_qr.html", {"image_urls": image_urls,"pdf_url": f"assets/img/QRPDF/{contact_number}.pdf"})
+
+    # --- CASE 2: Image not present but PDF exists → convert ---
+    if os.path.exists(pdf_path):
+        print("CASE 2: Image not present but PDF exists → convert ")
+        try:
+            image_paths = convert_pdf_to_images(pdf_path, img_dir,contact_number)
+            image_urls = [f"assets/img/QRImage/{os.path.basename(p)}" for p in image_paths]
+            return render(request, "owner/owner_qr.html", {"image_urls": image_urls,"pdf_url": f"assets/img/QRPDF/{contact_number}.pdf"})
+        except Exception as e:
+            return render(request, "owner/owner_qr.html", {"error": f"PDF conversion failed: {str(e)}"})
+
+    # --- CASE 3: Neither exists → generate PDF then convert ---
+    try:
+        print("CASE 3: Neither exists → generate PDF then convert")
+        create_shop_qr_pdf(client_code, contact_number)  # save PDF
+        image_paths = convert_pdf_to_images(pdf_path, img_dir ,contact_number)
+        image_urls = [f"assets/img/QRImage/{os.path.basename(p)}" for p in image_paths]
+        return render(request, "owner/owner_qr.html", {"image_urls": image_urls,"pdf_url": f"assets/img/QRPDF/{contact_number}.pdf"})
+    except Exception as e:
+        return render(request, "owner/owner_qr.html", {"error": f"Failed to generate QR PDF: {str(e)}"})
+
+
+
+def create_shop_qr_pdf(client_code, contact_number):
+    """
+    Generate Shop QR PDF for given client_code & contact_number.
+    Save as contact_number.pdf in static/assets/img/QRPDF.
+    Return path to generated PDF.
+    """
+    print(client_code,contact_number)
+    # API call to fetch client details
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {"ClientCode": client_code}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    client_data = None
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        print(response.text)
+        data = response.json()
+        if data.get("message_code") == 1000 and data.get("message_data"):
+            client_data = data["message_data"][0]
+    except Exception as e:
+        raise Exception(f"Client API error: {str(e)}")
+
+    print(client_data)
+    # Fallback if no client data
+    business_name = client_data.get('BusinessName', 'Gold Jewellery')
+    business_address = client_data.get('BusinessAddress', 'Pune')
+    owner_name = client_data.get('OwnerName', 'Unknown')
+    contact_number = client_data.get('OwnerContact', contact_number)
+
+    qr_url = f"https://gyaagl.club/GoldVault/?ClienttCode={client_code}"
+
+    # Template path
+    template_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF", "ShopQR2.pdf")
+    existing_pdf = PdfReader(open(template_path, "rb"))
+    output = PdfWriter()
+
+    # Create overlay
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet, pagesize=A4)
+
+    # Logo
+    # logo_path = os.path.join(settings.BASE_DIR, "static", "assets", "img", "icon", "512x512.png")
+    # try:
+    #     can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+    # except:
+    #     pass
+
+    # --- Logo Selection Logic ---
+    logo_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "company_logo")
+    logo_path_contact = os.path.join(logo_dir, f"{contact_number}.png")
+    default_logo_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "icon", "512x512.png")
+
+    if os.path.exists(logo_path_contact):
+        logo_path = logo_path_contact
+    elif os.path.exists(default_logo_path):
+        logo_path = default_logo_path
+    else:
+        logo_path = None  # no logo available
+
+    # --- Draw Logo if available ---
+    if logo_path:
+        try:
+            can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+        except Exception as e:
+            print(f"Logo drawing failed: {e}")
+
+
+    # Business details
+    can.setFont("Helvetica-Bold", 16)
+    can.drawCentredString(370, 770, business_name)
+    can.setFont("Helvetica", 14)
+    can.drawCentredString(370, 750, business_address)
+    can.drawCentredString(370, 730, owner_name)
+    can.drawCentredString(370, 710, contact_number)
+
+    # QR code
+    qr_img = qrcode.make(qr_url)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+    can.drawImage(ImageReader(qr_buffer), 200, 357, width=200, height=200, preserveAspectRatio=True, mask="auto")
+
+    can.save()
+    packet.seek(0)
+
+    # Merge
+    overlay_pdf = PdfReader(packet)
+    page = existing_pdf.pages[0]
+    page.merge_page(overlay_pdf.pages[0])
+    output.add_page(page)
+
+    # Save to file
+    pdf_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF")
+    os.makedirs(pdf_dir, exist_ok=True)
+    pdf_path = os.path.join(pdf_dir, f"{contact_number}.pdf")
+
+    with open(pdf_path, "wb") as f:
+        output.write(f)
+
+    return pdf_path
+
+##################to genrate pdf and see on browser###############
+def generate_shop_qr_pdf(request,ClientCode):
+    print("ClientCode",ClientCode)
+    # --- Demo Data (replace dynamically later) ---
+    business_name = "Demo Shop Pvt Ltd"
+    business_address = "123 Market Street, Pune, India"
+    owner_name = "John Doe"
+    contact_number = "9876543210"
+    # client_code = "675c347d-83d1-11f0-9769-525400ce20fd"
+    client_code = ClientCode
+    qr_url = f"https://gyaagl.club/GoldVault/?ClienttCode={client_code}"
+
+    if not ClientCode :
+        return JsonResponse({"success": False, "message": "Client Code Missing"})
+
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {
+        "ClientCode": client_code
+    }
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        error = None
+        client_data=None
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        print("DEBUG: Client Details API response:", response.text)
+        data = response.json()
+        if data.get("message_code") == 1000:
+            # data = response.json()
+            if data.get("message_code") == 1000 and data.get("message_data"):
+                client_data = data["message_data"][0]   # ✅ store booking list in bookings
+            else:
+                error = data.get("message_text", "No Client Data found.")
+        else:
+            error = f"{data.get("message_text")}"
+
+    except Exception as e:
+        error = f"Client Details API Exception: {str(e)}"
+        print(error)
+
+    if not client_data:
+        print(client_data)
+        return JsonResponse({"success": False, "message": error})
+    
+    
+    print(client_data)
+    business_name = client_data.get('BusinessName','Gold Jewellery')
+    business_address = client_data.get('BusinessAddress','Pune')
+    owner_name = client_data.get('OwnerName','Unknown')
+    contact_number = client_data.get('OwnerContact','1234567890')
+    
+    # --- Load Template (⚠️ don't close file) ---
+    template_path = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF", "ShopQR2.pdf")
+    existing_pdf = PdfReader(open(template_path, "rb"))   # ✅ same as your authorization logic
+    output = PdfWriter()
+
+    # --- Create Overlay ---
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet, pagesize=A4)
+
+    # Insert Shop Logo (top-left block)
+    # logo_path = os.path.join(settings.BASE_DIR, "static", "assets", "img","icon", "512x512.png")
+    # try:
+    #     can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+    # except:
+    #     pass
+
+    # --- Logo Selection Logic ---
+    logo_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "company_logo")
+    logo_path_contact = os.path.join(logo_dir, f"{contact_number}.png")
+    default_logo_path = os.path.join(settings.BASE_DIR, "static", "assets", "img", "icon", "512x512.png")
+
+    if os.path.exists(logo_path_contact):
+        logo_path = logo_path_contact
+    elif os.path.exists(default_logo_path):
+        logo_path = default_logo_path
+    else:
+        logo_path = None  # no logo available
+
+    # --- Draw Logo if available ---
+    if logo_path:
+        try:
+            can.drawImage(ImageReader(logo_path), 65, 680, width=100, height=100, preserveAspectRatio=True, mask="auto")
+        except Exception as e:
+            print(f"Logo drawing failed: {e}")
+
+
+    # Business details beside logo
+    can.setFont("Helvetica-Bold", 16)
+    can.drawCentredString(370, 770, business_name)
+
+    can.setFont("Helvetica", 14)
+    can.drawCentredString(370, 750, business_address)
+    can.drawCentredString(370, 730, owner_name)
+    can.drawCentredString(370, 710, contact_number)
+
+    # QR Code in center
+    qr_img = qrcode.make(qr_url)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+    can.drawImage(ImageReader(qr_buffer), 200, 357, width=200, height=200, preserveAspectRatio=True, mask="auto")
+
+    can.save()
+    packet.seek(0)
+
+    # --- Merge Overlay with Template ---
+    overlay_pdf = PdfReader(packet)
+    page = existing_pdf.pages[0]
+    page.merge_page(overlay_pdf.pages[0])
+    output.add_page(page)
+
+    # --- Save Final PDF ---
+    final_pdf = io.BytesIO()
+    output.write(final_pdf)
+    final_pdf.seek(0)
+
+    # --- Return File ---
+    return FileResponse(final_pdf, content_type="application/pdf")
