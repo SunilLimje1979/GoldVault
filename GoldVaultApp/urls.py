@@ -49,6 +49,7 @@ urlpatterns = [
     path('member_booking_list/' , views.member_booking_list , name='member_booking_list'),
     path('owner_qr/' , views.owner_qr , name='owner_qr'),
     path('generate_shop_qr_pdf/<str:ClientCode>/', views.generate_shop_qr_pdf , name='generate_shop_qr_pdf'),
+    path('regenerate_pdf/' , views.regenerate_pdf , name='regenerate_pdf'),
 
     
 ]

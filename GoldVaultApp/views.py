@@ -2752,3 +2752,90 @@ def generate_shop_qr_pdf(request,ClientCode):
 
     # --- Return File ---
     return FileResponse(final_pdf, content_type="application/pdf")
+
+
+############Regenerate the QR PDF for Owner
+
+def regenerate_qr_pdf_and_image(client_code, contact_number=None):
+    if not client_code:
+        return {"success": False, "message": "Client Code is required"}
+
+    # --- Step 1: Call API to fetch client info ---
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {"ClientCode": client_code}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        data = response.json()
+        if data.get("message_code") != 1000 or not data.get("message_data"):
+            return {"success": False, "message": "Client data not found"}
+        client_data = data["message_data"][0]
+    except Exception as e:
+        return {"success": False, "message": f"Client API error: {str(e)}"}
+
+    # --- Step 2: Extract API contact ---
+    api_contact = client_data.get("OwnerContact")
+    if not api_contact:
+        return {"success": False, "message": "API did not return contact number"}
+
+    # --- Step 3: Handle contact number mismatch ---
+    pdf_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRPDF")
+    img_dir = os.path.join(settings.BASE_DIR, "staticfiles", "assets", "img", "QRImage")
+    os.makedirs(pdf_dir, exist_ok=True)
+    os.makedirs(img_dir, exist_ok=True)
+
+    if contact_number and contact_number != api_contact:
+        # delete old files with passed contact number
+        old_pdf = os.path.join(pdf_dir, f"{contact_number}.pdf")
+        old_img = os.path.join(img_dir, f"{contact_number}1.png")
+        for f in [old_pdf, old_img]:
+            if os.path.exists(f):
+                os.remove(f)
+        # replace with api contact
+        contact_number = api_contact
+    else:
+        contact_number = api_contact
+
+    # --- Step 4: Generate PDF using existing function ---
+    try:
+        pdf_path = create_shop_qr_pdf(client_code, contact_number)
+    except Exception as e:
+        return {"success": False, "message": f"PDF generation failed: {str(e)}"}
+
+    # --- Step 5: Convert PDF → Image using existing function ---
+    try:
+        convert_pdf_to_images(pdf_path, img_dir, contact_number)
+    except Exception as e:
+        return {"success": False, "message": f"Image generation failed: {str(e)}"}
+
+    return {"success": True, "message": "Successfully regenerated PDF and images"}
+
+
+#### get request to regenerate pdf and image
+@owner_required
+def regenerate_pdf(request):
+    if(request.method=='GET'):
+        client_code = request.session.get('ClientCode', None)
+        contact_number = request.session.get("user").get('UserMobileNo')
+
+        if not client_code or not contact_number:
+           messages.info(request,"Client Code or Contact Number missing")
+           return redirect('owner_qr') 
+
+        result = regenerate_qr_pdf_and_image(client_code,contact_number)
+        print(result)
+        if(result and result.get('success',False)):
+            messages.success(request,"Successfully Regenerated PDF")
+        
+        else:
+            message = result.get('message',"Some Unwanted Problem occur please contact to Support Team")
+            messages.info(request,message)
+       
+        return redirect('owner_qr')
