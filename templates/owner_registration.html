@@ -17,6 +17,14 @@
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
 </head>
 <style>
+.logo {
+    max-width: 100%;
+    height: auto;
+    display: block;          /* ensures margin works */
+    margin: 0 auto;          /* centers horizontally */
+    padding: 0 50px;         /* left & right spacing */
+    border-radius: 200px;     /* rounded corners */
+}
 
 body {
     margin: 0;
@@ -36,14 +44,19 @@ label {
 </style>
 <body>
 <div id="appCapsule">
-    <div class="section text-center">
-        <img src="{% static 'assets/img/wallet_6592084.png' %}" alt="Logo" class="logo" width="80" height="80">
+    {% comment %} <div class="section text-center">
+        <img src="{% static 'assets/img/gold_v.png' %}" alt="Logo" class="logo" width="180" height="60">
         <h1 style="color:#ffffff;">Gold Vault</h1>
+    </div> {% endcomment %}
+
+    <div class="section text-center">
+        <img src="{% static 'assets/img/gold_v.png' %}" alt="Logo" class="logo">
+        {% comment %} <h1 style="color:#ffffff;">Gold Vault</h1> {% endcomment %}
     </div>
 
     <div class="section mt-1 text-center">
-        <h2 style="color:#ffffff; margin-top:0px; font-size:20px;">
-            Owner Registration
+        <h2 style="color:#ffffff; margin-top:0px; font-size:20px; text-transform: uppercase;">
+            Jeweller Registration
         </h2>
     </div>
 
