@@ -1,0 +1,87 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Update Profile Picture</title>
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}">
+    <script src="{% static 'assets/js/loader.js' %}"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+
+<div class="appHeader">
+    <div class="left">
+        <a href="{% url 'setting' %}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle" style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:500;">
+        Update Profile Picture
+    </div>
+</div>
+
+<div id="appCapsule">
+    <div class="section mt-2">
+        <form method="post" action="{% url 'update_profile_pic' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Current Profile Pic -->
+            <div class="text-center mb-3">
+                <img src="{{ user.UserProfilePhotoURL|default_if_none:'/static/assets/img/default-avatar.png' }}"
+                     id="previewImage"
+                     style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:2px solid #ccc;">
+            </div>
+
+            <!-- Upload New Pic -->
+            <div class="form-group basic animated">
+                <div class="input-wrapper">
+                    <label class="label">Choose New Profile Picture</label>
+                    <input type="file" class="form-control" id="UserProfilePhotoURL" name="UserProfilePhotoURL" accept="image/*" required>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12 mb-2 px-4">
+                    <button type="submit" class="btn btn-block btn-lg w-100"
+                            style="background-color:#edc88f !important;border-color:#edc88f !important;color:black !important;border-radius:8px;font-weight:600;">
+                        Update Picture
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JS Preview -->
+<script>
+document.getElementById("UserProfilePhotoURL").addEventListener("change", function (event) {
+    const [file] = event.target.files;
+    if (file) {
+        document.getElementById("previewImage").src = URL.createObjectURL(file);
+    }
+});
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            var msg = "{{ message|escapejs }}";
+            var tag = "{{ message.tags }}";
+            var alertType = "info";
+            var alertTitle = "Info";
+            if (tag.includes("success")) { alertType = "success"; alertTitle = "Success!"; }
+            else if (tag.includes("error")) { alertType = "error"; alertTitle = "Error!"; }
+
+            swal({ title: alertTitle, text: msg, type: alertType, showConfirmButton: true });
+        {% endfor %}
+    </script>
+{% endif %}
+
+</body>
+</html>

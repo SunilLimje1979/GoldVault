@@ -1316,7 +1316,8 @@ def faq(request):
     client_code = request.session.get('ClientCode', None)
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
 
-    payload = {"ClientCode": client_code, "TextType": "2"}
+    payload = {"ClientCode": client_code, "TextType": "4"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "4"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -1392,8 +1393,8 @@ def privacypolicy(request):
     user_code = request.session.get('user', {}).get('UserCode')
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
 
-    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "3"}
-    payload = {"ClientCode": client_code, "TextType": "3"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "2"}
+    payload = {"ClientCode": client_code, "TextType": "2"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -1430,8 +1431,8 @@ def membershipagrement(request):
     api_url = "https://www.gyaagl.app/goldvault_api/getsupporttext"
     client_code = request.session.get('ClientCode', None)
 
-    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "4"}
-    payload = {"ClientCode": client_code, "TextType": "4"}
+    # payload = {"ClientCode": "5dc0abf7-85de-4ede-abff-e7d53e3804b7", "TextType": "3"}
+    payload = {"ClientCode": client_code, "TextType": "3"}
     headers = {
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
@@ -2839,3 +2840,118 @@ def regenerate_pdf(request):
             messages.info(request,message)
        
         return redirect('owner_qr')
+
+################################### Update Profile ############################################
+@user_required
+def update_profile(request):
+    user = request.session.get("user", {})
+    client_code = request.session.get("ClientCode", None)
+    if request.method == "POST":
+        # collect data from the form
+        user_data = {
+            "UserFullName": request.POST.get("UserFullName"),
+            "UserPANNo": request.POST.get("UserPANNo"),
+            "UserAadharNo": request.POST.get("UserAadharNo"),
+            "UserGender": request.POST.get("UserGender"),
+            "UserDOB": request.POST.get("UserDOB"),
+        }
+
+        # print in console (server side)
+        print("=== Update Profile Data ===")
+        for k, v in user_data.items():
+            print(f"{k}: {v}")
+
+        # If you want to show in browser
+        messages.success(request, f"Profile Updated: {user_data}")
+
+        # redirect to same page or dashboard
+        return redirect("update_profile")
+
+    # if GET request
+    return render(request, "update_profile.html", {
+        "user": request.session.get("user", {})  # prefill form if available
+    })
+    
+################################### Profile Picture ############################################
+@user_required
+@csrf_exempt
+def update_profile_pic(request):
+    user = request.session.get("user", {})
+    client_code = request.session.get("ClientCode", None)
+
+    if request.method == "POST":
+        user_code = user.get("UserCode")
+        client_code = request.session.get("ClientCode")
+
+        # Uploaded file
+        uploaded_file = request.FILES.get("UserProfilePhotoURL")
+
+        print("=== Profile Pic Update ===")
+        print("ClientCode:", client_code)
+        print("UserCode:", user_code)
+        print("Uploaded File:", uploaded_file)
+
+        if uploaded_file:
+            # ==============================
+            # 1) Save image in static folder
+            # ==============================
+            img_directory = os.path.join(settings.BASE_DIR, 'staticfiles', 'assets', 'profile_pic')
+            os.makedirs(img_directory, exist_ok=True)
+
+            # Always save as PNG with user code as filename (overwrite mode)
+            file_name = f"{user_code}.png"
+            file_path = os.path.join(img_directory, file_name)
+
+            # Convert and save as PNG
+            image = Image.open(uploaded_file)
+            image = image.convert("RGBA")
+            image.save(file_path, "PNG")
+
+            # Public URL (adjust domain/path if needed)
+            profile_photo_url = f"https://gyaagl.club/GoldVault/static/assets/profile_pic/{file_name}"
+
+            print("Saved Image Path:", file_path)
+            print("Public URL:", profile_photo_url)
+
+            # ==============================
+            # 2) Call API with URL
+            # ==============================
+            api_url = "https://www.gyaagl.app/goldvault_api/userphoto/"
+
+            headers = {
+                "Accept": "application/json, text/plain, */*",
+                "Origin": "https://www.gyaagl.app",
+                "Referer": "https://www.gyaagl.app/",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            }
+
+            data = {
+                "ClientCode": client_code,
+                "UserCode": user_code,
+                "UserProfilePhotoURL": profile_photo_url,
+            }
+
+            try:
+                response = requests.post(api_url, headers=headers, json=data)
+                print("Raw Response:", response.text)
+
+                response_data = response.json()
+                print("API Response:", response_data)
+
+                if response_data.get("message_code") == 1000:
+                    messages.success(request, response_data.get("message_text", "Profile picture updated successfully!"))
+                else:
+                    messages.error(request, response_data.get("message_text", "Failed to update profile picture."))
+
+            except Exception as e:
+                print("Error calling API:", e)
+                messages.error(request, "Something went wrong while updating profile picture.")
+        else:
+            messages.error(request, "Please upload a valid image.")
+
+        return redirect("update_profile_pic")
+
+    return render(request, "update_profile_pic.html", {
+        "user": user,
+        "ClientCode": client_code,
+    })

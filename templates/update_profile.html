@@ -1,0 +1,186 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Update Profile</title>
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <link rel="manifest" href="{% url 'manifest' request.session.ClientCode %}">
+    <script src="{% static 'assets/js/loader.js' %}"></script>
+</head>
+<body>
+<!-- loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+
+<div class="appHeader">
+    <div class="left">
+        {% if request.session.user.UserType == '1' %}
+            <a href="{% url 'dashboard' %}" class="headerButton goBack">
+                <ion-icon name="chevron-back-outline"></ion-icon>
+            </a>
+        {% else %}
+            <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+                <ion-icon name="chevron-back-outline"></ion-icon>
+            </a>
+        {% endif %}
+    </div>
+    <div class="pageTitle" style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:500;">
+        Update Profile
+    </div>
+</div>
+
+<div id="appCapsule">
+    <div class="section mt-2">
+        <form method="post" action="{% url 'update_profile' %}">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body pb-1">
+
+                    <!-- Full Name -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="UserFullName">Full Name</label>
+                            <input type="text" class="form-control" id="UserFullName" name="UserFullName"
+                                placeholder="Full Name"
+                                value="{{ user.UserFullName }}" required>
+                        </div>
+                    </div>
+
+                    <!-- PAN -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="UserPANNo">PAN Number</label>
+                            <input type="text" class="form-control" id="UserPANNo" name="UserPANNo"
+                                placeholder="PAN Number"
+                                value="{{ user.UserPANNo }}"
+                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                maxlength="10"
+                                title="Please enter a valid PAN Number (e.g. AAAPA1234A)">
+                        </div>
+                    </div>
+
+                    <!-- Aadhar -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="UserAadharNo">Aadhar Number</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="UserAadharNo"
+                                name="UserAadharNo"
+                                placeholder="1234-5678-9012"
+                                value="{{ user.UserAadharNo }}"
+                                maxlength="14"
+                                pattern="^[0-9]{4}-[0-9]{4}-[0-9]{4}$"
+                                inputmode="numeric"
+                                autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="UserGender">Gender</label>
+                            <select class="form-control" id="UserGender" name="UserGender" required>
+                                <option value="">-- Select Gender --</option>
+                                <option value="1" {% if user.UserGender == "1" %}selected{% endif %}>Male</option>
+                                <option value="2" {% if user.UserGender == "2" %}selected{% endif %}>Female</option>
+                                <option value="3" {% if user.UserGender == "3" %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div class="form-group basic animated">
+                        <div class="input-wrapper">
+                            <label class="label" for="UserDOB">Date of Birth</label>
+                            <input type="date" class="form-control" id="UserDOB" name="UserDOB"
+                                value="{{ user.UserDOB|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12 mb-2 px-4">
+                    <button type="submit" class="btn btn-block btn-lg w-100"
+                            style="background-color:#edc88f !important;border-color:#edc88f !important;color:black !important;border-radius:8px;font-weight:600;">
+                        Update Profile
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/base.js' %}"></script>
+
+<script>
+(function () {
+  const el = document.getElementById('UserAadharNo');
+  if (!el) return;
+
+  function formatAadhar(v) {
+    const digits = String(v || '').replace(/\D/g, '').slice(0, 12);
+    const parts = [];
+    for (let i = 0; i < digits.length; i += 4) {
+      parts.push(digits.substring(i, i + 4));
+    }
+    return parts.join('-');
+  }
+
+  el.value = formatAadhar(el.value);
+
+  el.addEventListener('input', function () {
+    const cursorFromEnd = el.value.length - el.selectionStart;
+    el.value = formatAadhar(el.value);
+    const newPos = Math.max(el.value.length - cursorFromEnd, 0);
+    el.setSelectionRange(newPos, newPos);
+  });
+
+  el.addEventListener('paste', function (e) {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    const formatted = formatAadhar(text);
+    document.execCommand('insertText', false, formatted);
+  });
+})();
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            var msg = "{{ message|escapejs }}";
+            var tag = "{{ message.tags }}";
+
+            var alertType = "info";
+            var alertTitle = "Info";
+
+            if (tag.includes("success")) {
+                alertType = "success";
+                alertTitle = "Success!";
+            } else if (tag.includes("danger")) {
+                alertType = "error";
+                alertTitle = "Error!";
+            }
+
+            swal({
+                title: alertTitle,
+                text: msg,
+                type: alertType,
+                showConfirmButton: true
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+</body>
+</html>

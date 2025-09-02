@@ -36,6 +36,8 @@ urlpatterns = [
     path('payment_update/', views.payment_update, name='payment_update'),
     path('change_pin/', views.change_pin, name='change_pin'),
     path('update_nominee/', views.update_nominee, name='update_nominee'),
+    path('update_profile_pic/', views.update_profile_pic, name='update_profile_pic'),
+    path('update_profile/', views.update_profile, name='update_profile'),
     
     ##################################### Akash ############################################
     
