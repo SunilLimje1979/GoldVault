@@ -58,7 +58,7 @@
     <!-- App Capsule -->
     <div id="appCapsule">
 
-        <div class="section mt-3 text-center">
+        {% comment %} <div class="section mt-3 text-center">
             <div class="avatar-section">
                 <a href="#">
                     <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="avatar" class="imaged w100 rounded">
@@ -66,6 +66,33 @@
                         <ion-icon name="camera-outline"></ion-icon>
                     </span>
                 </a>
+            </div>
+        </div> {% endcomment %}
+        {% comment %} <div class="section mt-3 text-center">
+            <div class="avatar-section">
+                <a href="#">
+                    <img src="{% if user.UserCode %}/static/assets/profile_pic/{{ user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
+                        alt="avatar" class="imaged w100 rounded"
+                        onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+                    <span class="button">
+                        <ion-icon name="camera-outline"></ion-icon>
+                    </span>
+                </a>
+            </div>
+        </div> {% endcomment %}
+        <div class="section mt-3 text-center">
+            <div class="avatar-section">
+                <div class="position-relative d-inline-block">
+                    <!-- Profile Image -->
+                    <img src="{% if user.UserCode %}/static/assets/profile_pic/{{ user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
+                        alt="avatar" class="imaged w100 rounded"
+                        onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+
+                    <!-- Camera Icon Button -->
+                    <a href="{% url 'update_profile_pic' %}" class="button position-absolute bottom-0 end-0">
+                        <ion-icon name="camera-outline"></ion-icon>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -117,7 +144,7 @@
         <div class="listview-title mt-1">Profile Settings</div>
         <ul class="listview image-listview text inset">
             <li>
-                <a href="#" class="item">
+                <a href="{% url 'update_profile' %}" class="item">
                     <div class="in">
                         <div>Edit Profile</div>
                     </div>

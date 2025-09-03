@@ -50,30 +50,25 @@
                         </div>
                     </div>
 
-                    <!-- PAN -->
+                                        <!-- PAN -->
                     <div class="form-group basic animated">
                         <div class="input-wrapper">
-                            <label class="label" for="UserPANNo">PAN Number</label>
+                            <label class="label" for="UserPANNo">PAN Number (Optional)</label>
                             <input type="text" class="form-control" id="UserPANNo" name="UserPANNo"
                                 placeholder="PAN Number"
-                                value="{{ user.UserPANNo }}"
+                                value="{{ user.UserPANNo|default_if_none:'' }}"
                                 pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                                maxlength="10"
-                                title="Please enter a valid PAN Number (e.g. AAAPA1234A)">
+                                maxlength="10">
                         </div>
                     </div>
 
                     <!-- Aadhar -->
                     <div class="form-group basic animated">
                         <div class="input-wrapper">
-                            <label class="label" for="UserAadharNo">Aadhar Number</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="UserAadharNo"
-                                name="UserAadharNo"
+                            <label class="label" for="UserAadharNo">Aadhar Number (Optional)</label>
+                            <input type="text" class="form-control" id="UserAadharNo" name="UserAadharNo"
                                 placeholder="1234-5678-9012"
-                                value="{{ user.UserAadharNo }}"
+                                value="{{ user.UserAadharNo|default_if_none:'' }}"
                                 maxlength="14"
                                 pattern="^[0-9]{4}-[0-9]{4}-[0-9]{4}$"
                                 inputmode="numeric"
@@ -84,8 +79,8 @@
                     <!-- Gender -->
                     <div class="form-group basic animated">
                         <div class="input-wrapper">
-                            <label class="label" for="UserGender">Gender</label>
-                            <select class="form-control" id="UserGender" name="UserGender" required>
+                            <label class="label" for="UserGender">Gender (Optional)</label>
+                            <select class="form-control" id="UserGender" name="UserGender">
                                 <option value="">-- Select Gender --</option>
                                 <option value="1" {% if user.UserGender == "1" %}selected{% endif %}>Male</option>
                                 <option value="2" {% if user.UserGender == "2" %}selected{% endif %}>Female</option>
@@ -97,11 +92,12 @@
                     <!-- Date of Birth -->
                     <div class="form-group basic animated">
                         <div class="input-wrapper">
-                            <label class="label" for="UserDOB">Date of Birth</label>
+                            <label class="label" for="UserDOB">Date of Birth (Optional)</label>
                             <input type="date" class="form-control" id="UserDOB" name="UserDOB"
-                                value="{{ user.UserDOB|date:'Y-m-d' }}">
+                                value="{{ user.UserDOB|default_if_none:'' }}">
                         </div>
                     </div>
+
 
                 </div>
             </div>

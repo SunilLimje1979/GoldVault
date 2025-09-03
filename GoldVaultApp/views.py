@@ -469,7 +469,9 @@ def register(request):
 ################################### Setting ############################################
 @user_required
 def setting(request):
-    return render(request, "setting.html")
+    session_user = request.session.get("user", {}) or {}
+    return render(request, "setting.html", {"user": session_user})
+
 ####################################### Login ####################################################
 def login_view(request):
     # if request.method=='GET':
@@ -2844,34 +2846,85 @@ def regenerate_pdf(request):
 ################################### Update Profile ############################################
 @user_required
 def update_profile(request):
-    user = request.session.get("user", {})
-    client_code = request.session.get("ClientCode", None)
+    session_user = request.session.get("user", {})
+    client_code = request.session.get("ClientCode")
+
+    user_data = session_user or {}
+     # Convert epoch to yyyy-mm-dd for input field
+    user_dob_epoch = session_user.get("UserDOB")
+    user_dob_formatted = ""
+
+    if user_dob_epoch:
+        try:
+            dt = datetime.fromtimestamp(int(user_dob_epoch))
+            user_dob_formatted = dt.strftime("%Y-%m-%d")  # format for <input type="date">
+        except Exception:
+            pass
+
+    # Replace in session copy for template
+    session_user["UserDOB"] = user_dob_formatted
+
     if request.method == "POST":
-        # collect data from the form
-        user_data = {
+        # Convert DOB from dd/mm/yyyy to epoch
+        dob_input = request.POST.get("UserDOB") or ""
+        formatted_dob = ""
+
+        if dob_input:
+            try:
+                dt = datetime.strptime(dob_input, "%Y-%m-%d")
+                formatted_dob = dt.strftime("%d/%m/%Y")
+            except ValueError:
+                formatted_dob = dob_input  # fallback if parsing fails
+
+        print(formatted_dob)  # e.g., 18/12/1979
+
+        # Collect form data
+        updated_data = {
+            "ClientCode": client_code,
+            "UserCode": session_user.get("UserCode"),
             "UserFullName": request.POST.get("UserFullName"),
-            "UserPANNo": request.POST.get("UserPANNo"),
-            "UserAadharNo": request.POST.get("UserAadharNo"),
-            "UserGender": request.POST.get("UserGender"),
-            "UserDOB": request.POST.get("UserDOB"),
+            "UserPANNo": request.POST.get("UserPANNo") or "",
+            "UserAadharNo": request.POST.get("UserAadharNo") or "",
+            "UserGender": request.POST.get("UserGender") or "",  # should be "1"/"2"/"3"
+            "UserDOB": formatted_dob,
         }
 
-        # print in console (server side)
         print("=== Update Profile Data ===")
-        for k, v in user_data.items():
+        for k, v in updated_data.items():
             print(f"{k}: {v}")
 
-        # If you want to show in browser
-        messages.success(request, f"Profile Updated: {user_data}")
+        try:
+            headers = {
+                "Accept": "application/json, text/plain, */*",
+                "Origin": "https://www.gyaagl.app",
+                "Referer": "https://www.gyaagl.app/",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            }
 
-        # redirect to same page or dashboard
+            api_url = "https://www.gyaagl.app/goldvault_api/updateprofile"
+            response = requests.post(api_url, json=updated_data, headers=headers, timeout=10)
+            print("API RESPONSE ===", response.text)
+
+            if response.status_code == 200:
+                res_json = response.json()
+                if res_json.get("message_code") == 1000:
+                    if res_json.get("message_data"):
+                        updated_user = res_json["message_data"][0]
+                        request.session["user"] = updated_user
+
+                    messages.success(request, res_json.get("message_text", "Profile updated successfully ✅"))
+                else:
+                    messages.error(request, res_json.get("message_text", "Failed to update profile"))
+            else:
+                messages.error(request, f"API Error: {response.status_code}")
+
+        except Exception as e:
+            messages.error(request, f"Error while updating profile: {str(e)}")
+
         return redirect("update_profile")
 
-    # if GET request
-    return render(request, "update_profile.html", {
-        "user": request.session.get("user", {})  # prefill form if available
-    })
-    
+    return render(request, "update_profile.html", {"user": user_data})
+
 ################################### Profile Picture ############################################
 @user_required
 @csrf_exempt
@@ -2916,7 +2969,7 @@ def update_profile_pic(request):
             # ==============================
             # 2) Call API with URL
             # ==============================
-            api_url = "https://www.gyaagl.app/goldvault_api/userphoto/"
+            api_url = "https://www.gyaagl.app/goldvault_api/userphoto"
 
             headers = {
                 "Accept": "application/json, text/plain, */*",
@@ -2955,3 +3008,5 @@ def update_profile_pic(request):
         "user": user,
         "ClientCode": client_code,
     })
+    
+    

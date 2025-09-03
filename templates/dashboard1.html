@@ -32,12 +32,10 @@
     }
 </style>
 <body>
-
     <!-- loader -->
     <div id="loader">
         <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
     </div>
-    <!-- * loader -->
 
     <!-- App Header -->
     <div class="appHeader bg-primary text-light">
@@ -62,9 +60,16 @@
             </a>
 
             <!-- Profile -->
-            <a href="{% url 'setting' %}" class="headerButton">
+            {% comment %} <a href="{% url 'setting' %}" class="headerButton">
                 <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged w32">
                 <span class="badge badge-danger">6</span>
+            </a> {% endcomment %}
+            <a href="{% url 'setting' %}" class="headerButton">
+                <img src="{% if request.session.user.UserCode %}/static/assets/profile_pic/{{ request.session.user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
+                    alt="{{ request.session.user.UserFullName|default:'User' }}" 
+                    class="imaged w32"
+                    onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+                {% comment %} <span class="badge badge-danger">6</span> {% endcomment %}
             </a>
 
             <!-- Logout -->
@@ -404,9 +409,17 @@
                 <div class="modal-body p-0">
                     <!-- profile box -->
                     <div class="profileBox pt-2 pb-2">
-                        <div class="image-wrapper">
+                        {% comment %} <div class="image-wrapper">
                             <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged  w36">
+                        </div> {% endcomment %}
+                        <div class="image-wrapper">
+                            <img src="{% if request.session.user.UserCode %}/static/assets/profile_pic/{{ request.session.user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
+                                alt="{{ request.session.user.UserFullName|default:'User' }}" 
+                                class="imaged w36"
+                                onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
                         </div>
+
+
                         <div class="in">
                             <strong>{{ request.session.user.UserFullName  }}</strong>
                             <div class="text-muted">{{request.session.user.UserMobileNo }}</div>\
