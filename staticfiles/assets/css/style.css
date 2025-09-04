@@ -354,7 +354,8 @@ a:hover, a:active, a:focus {
   margin-top: env(safe-area-inset-top);
 }
 html, body, #appCapsule {
-    background-color: #175754 !important;
+    /* background-color: #175754 !important; */
+    background-color: #585141!important;
     height: 100%;
 }
 
@@ -1163,7 +1164,8 @@ blockquote.blockquote .blockquote-footer {
   right: 0;
   bottom: 0;
   z-index: 99999;
-  background: #6236FF;
+  background: #585141;
+  /* background: #6236FF; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1209,7 +1211,8 @@ body.animationGoBack:after {
   top: 0;
   bottom: 0;
   width: 100%;
-  background-color: #6236FF;
+  background-color: #585141;
+  /* background-color: #6236FF; */
   background-image: url("../img/loading-icon.png");
   background-repeat: no-repeat;
   background-size: 42px auto;
@@ -2998,7 +3001,8 @@ a.badge-dark {
 }
 
 .bg-primary {
-  background: #175754 !important;
+  /* background: #175754 !important; */
+  background: #585141 !important;
   color: #FFF;
 }
 
@@ -5147,7 +5151,8 @@ textarea,
   content: "";
   display: block;
   height: 140px;
-  background: #175754;
+  background: #585141;
+  /* background: #175754; */
 }
 
 .wallet-card {
@@ -5184,7 +5189,7 @@ textarea,
   background: rgba(98, 54, 255, 0.1);
   width: 50px;
   height: 64px;
-  font-size: 26px;
+  font-size: 24px;
   border-radius: 10px;
 }
 

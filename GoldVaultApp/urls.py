@@ -22,6 +22,9 @@ urlpatterns = [
     path('withdrawl-list/', views.withdrawal_list, name='withdrawl_list'),
     path('get_cities/', views.get_cities, name='get_cities'),
     
+    path('update_bank_details/', views.update_bank_details, name='update_bank_details'),
+    path('update_client_details/', views.update_client_details, name='update_client_details'),
+    
     #################################### Shekhar ##########################################
     path("get_transection_list/", views.get_transection_list, name="get_transection_list"),
     path("details_transection/<str:id>/", views.details_transection, name="details_transection"),

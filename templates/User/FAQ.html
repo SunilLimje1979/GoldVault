@@ -46,29 +46,38 @@
 
 <!-- App Capsule -->
 <div id="appCapsule" class="full-height">
-    <div class="section mb-2">
+  <!-- inline CSS that overrides all nested colors -->
+  <style>
+    #appCapsule .section.mb-2,
+    #appCapsule .section.mb-2 * { color: #fff !important; }
+    /* ensure links also turn white */
+    #appCapsule .section.mb-2 a,
+    #appCapsule .section.mb-2 a:hover,
+    #appCapsule .section.mb-2 a:focus,
+    #appCapsule .section.mb-2 a:active { color: #fff !important; text-decoration-color: rgba(255,255,255,0.7) !important; }
+    /* alerts & muted text */
+    #appCapsule .section.mb-2 .alert { color: #fff !important; }
+    #appCapsule .section.mb-2 .text-muted,
+    #appCapsule .section.mb-2 small { color: #fff !important; opacity: 0.85; }
+  </style>
 
-        {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
-        {% else %}
-            {% comment %} <h3 style="font-family: 'Poppins', sans-serif; text-align: center; color: white; margin-top: 10px; margin-bottom: 10px;">
-                {{ faq_title }}
-            </h3> {% endcomment %}
-            {% comment %} <small class="text-muted">Last Updated: {{ last_updated }}</small> {% endcomment %}
-            <div class="mt-1" style="font-family: 'Poppins', sans-serif;">
-                {{ faq_html|safe }}
-            </div>
+  <div class="section mb-2">
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% else %}
+      <div class="mt-1" style="font-family: 'Poppins', sans-serif;">
+        {{ faq_html|safe }}
+      </div>
 
-            {% if last_updated %}
-                <div style="text-align: right; font-family: 'Poppins', sans-serif; font-size: 12px; color: #888; margin-top: 5px;">
-                    Last Updated: {{ last_updated }}
-                </div>
-            {% endif %}
-
-        {% endif %}
-
-    </div>
+      {% if last_updated %}
+        <div style="text-align: right; font-family: 'Poppins', sans-serif; font-size: 12px; margin-top: 5px;">
+          Last Updated: {{ last_updated }}
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
 </div>
+
 
 <!-- JS -->
 <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>

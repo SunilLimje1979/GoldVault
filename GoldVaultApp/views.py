@@ -484,7 +484,9 @@ def login_view(request):
     #     return render(request, "base.html",{"ClientCode":ClientCode})
     
     if request.method == 'GET':
-        ClientCode = request.GET.get("ClientCode")
+        # ClientCode = request.GET.get("ClientCode")
+        # ClientCode = request.GET.get("ClientCode", "91c25409-84b4-11f0-9769-525400ce20fd")
+        ClientCode = request.GET.get("ClientCode", "5dc0abf7-85de-4ede-abff-e7d53e3804b7")
         print("Client ID from URL:", ClientCode, "182")
         request.session['ClientCode'] = ClientCode  
 
@@ -2023,7 +2025,7 @@ def member_transection_details(request, id):
         {"transaction": transaction, "error": error, "user_code": user_code},
     )
 
-###########Member-withdrawl-list
+######################################## Member-withdrawl-list
 @owner_required
 def member_withdrawl_list(request):
     members = []
@@ -2162,7 +2164,7 @@ def update_withdraw_status(request):
 
     return JsonResponse({"success": False, "message": "Invalid request"})
 
-
+################################### Get Booking List ##############################################
 @owner_required
 def get_booking_list(request):
     date = request.GET.get('date')
@@ -2241,7 +2243,7 @@ def get_booking_list(request):
         {"bookings": bookings,'date':date ,"error": error,},
     )
 
-
+#################################  Update Booking status #############################################
 @csrf_exempt   # remove if you already handle CSRF in template
 def update_booking_status(request):
     if request.method == "POST":
@@ -2312,7 +2314,7 @@ def update_booking_status(request):
 
     return JsonResponse({"success": False, "message": "Invalid request"})
 
-
+#################################### Get Withdraw List ############################################
 @owner_required
 def get_withdrawal_list(request):
     date = request.GET.get('date')
@@ -2389,7 +2391,7 @@ def get_withdrawal_list(request):
         {"Withdrawal": Withdrawal,'date':date ,"error": error,},
     )
 
-
+############################################ Member Booking List #######################################################
 @owner_required
 def member_booking_list(request):
     members = []
@@ -3009,4 +3011,101 @@ def update_profile_pic(request):
         "ClientCode": client_code,
     })
     
-    
+############################################# Update Client Profile ################################################    
+@user_required
+def update_client_details(request):
+    client_code = request.session.get("ClientCode", None)
+    client_data = None  
+
+    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {"ClientCode": client_code}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        data = response.json()
+        if data.get("message_code") == 1000 and data.get("message_data"):
+            client_data = data["message_data"][0]
+    except Exception as e:
+        print(f"Client API error: {str(e)}")
+
+    return render(request, "owner/update_client_details.html", {
+        "client_data": client_data
+    })
+
+############################################# Update Bank Details ################################################    
+@user_required
+def update_bank_details(request):
+    client_code = request.session.get("ClientCode", None)
+    user = request.session.get("user", {})
+    client_data = None  
+
+    # API to fetch existing client info
+    client_info_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    payload = {"ClientCode": client_code}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
+    # Fetch existing client info
+    try:
+        response = requests.post(client_info_url, json=payload, headers=headers, timeout=10)
+        data = response.json()
+        if data.get("message_code") == 1000 and data.get("message_data"):
+            client_data = data["message_data"][0]
+    except Exception as e:
+        print(f"Client API error: {str(e)}")
+        messages.error(request, "Unable to fetch client details. Please try again.")
+
+    # Handle form submission
+    if request.method == "POST":
+        try:
+            # Collect bank details from form
+            bank_payload = {
+                "ClientCode": client_code,
+                "UserCode": user.get("UserCode"),
+                "UPIID": request.POST.get("UPIID"),
+                "BankAccountName": request.POST.get("BankAccountName"),
+                "BankAccountNo": request.POST.get("BankAccountNo"),
+                "BankName": request.POST.get("BankName"),
+                "BranchName": request.POST.get("BranchName"),
+                "IFSCCode": request.POST.get("IFSCCode"),
+                "BranchAddress": request.POST.get("BranchAddress"),
+            }
+
+            print("=== Sending Bank Details ===")
+            for key, value in bank_payload.items():
+                print(f"{key}: {value}")
+
+            # API to update client bank details
+            client_bank_url = "https://www.gyaagl.app/goldvault_api/clientbank"
+            bank_response = requests.post(client_bank_url, json=bank_payload, headers=headers, timeout=10)
+            bank_data = bank_response.json()
+            print(bank_data)
+
+            if bank_data.get("message_code") == 1000:
+                messages.success(request, bank_data.get("message_text", "Bank details updated successfully."))
+                
+                # update local data for rendering
+                if client_data:
+                    client_data.update(bank_payload)
+            else:
+                messages.error(request, bank_data.get("message_text", "Failed to update bank details."))
+
+        except Exception as e:
+            print(f"Error updating bank details: {e}")
+            messages.error(request, "Something went wrong while updating. Please try again.")
+
+    return render(request, "owner/update_bank_details.html", {
+        "client_data": client_data
+    })

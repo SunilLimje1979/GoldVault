@@ -23,11 +23,11 @@
 </head>
 <style>
     .stats-section .stat-box .title {
-        font-size: 14px;   /* smaller label font */
+        font-size: 13px;   /* smaller label font */
         color: #888;       /* optional softer color */
     }
     .stats-section .stat-box .value {
-        font-size: 18px;   /* smaller number font */
+        font-size: 17px;   /* smaller number font */
         font-weight: 600;  /* still bold for readability */
     }
 </style>
@@ -294,7 +294,7 @@
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Current Balance(Gm)</div>
+                        <div class="title">Current(Gm)</div>
                         <div class="value" id="current_balance">
                             {{ stats.current_balance }}
                         </div>
@@ -310,13 +310,13 @@
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Total Invested</div>
+                        <div class="title">Invested</div>
                         <div class="value">₹ {{ stats.total_invested }}</div>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Total Withdrawal</div>
+                        <div class="title">Withdrawal</div>
                         <div class="value">₹ {{ stats.total_withdrwal }}</div>
                     </div>
                 </div>
@@ -324,13 +324,13 @@
             <div class="row mt-2">
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Purchase Weight(Gm)</div>
+                        <div class="title">Purchase(Gm)</div>
                         <div class="value">{{ stats.product_weight }}</div>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="stat-box">
-                        <div class="title">Withdrawal Weight(Gm)</div>
+                        <div class="title">Withdrawal(Gm)</div>
                         <div class="value"> {{ stats.withdrawl_weight }} </div>
                     </div>
                 </div>
@@ -340,7 +340,7 @@
         <!-- Transactions -->
        <div class="section mt-4">
             <div class="section-heading" style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 class="title">Transactions</h2>
+               <h2 class="title" style="color: white;">Transactions</h2>
                 <a href="{% url 'get_transection_list' %}" class="link" style="color:white; text-decoration:none;">View All</a>
             </div>
 
@@ -477,6 +477,16 @@
                     <div class="listview-title mt-1">Option</div>
                     <ul class="listview flush transparent no-line image-listview">
                         <li>
+                            <a href="{% url 'membershipagrement' %}" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="people-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Membership Agreement
+                                </div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{% url 'faq' %}" class="item">
                                 <div class="icon-box bg-primary">
                                     <ion-icon name="pie-chart-outline"></ion-icon>
@@ -504,27 +514,6 @@
                                 </div>
                                 <div class="in">
                                     Privacy & Policy
-                                </div>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'support_contact' %}" class="item">
-                                <div class="icon-box bg-primary">
-                                    <ion-icon name="chatbubbles-outline"></ion-icon>
-                                </div>
-                                <div class="in">
-                                    Contact Us
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'membershipagrement' %}" class="item">
-                                <div class="icon-box bg-primary">
-                                    <ion-icon name="people-outline"></ion-icon>
-                                </div>
-                                <div class="in">
-                                    Membership Agreement
                                 </div>
                             </a>
                         </li>
@@ -575,7 +564,16 @@
                                 </div>
                             </a>
                         </li>
-
+                        <li>
+                            <a href="{% url 'support_contact' %}" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="chatbubbles-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Contact Us
+                                </div>
+                            </a>
+                        </li>
                         <li>
                             <a href="{% url 'logout' %}"class="item">
                                 <div class="icon-box bg-primary">
