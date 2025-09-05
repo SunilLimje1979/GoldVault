@@ -82,7 +82,7 @@
         </div> {% endcomment %}
         <div class="section mt-3 text-center">
             <div class="avatar-section">
-                <div class="position-relative d-inline-block">
+                {% comment %} <div class="position-relative d-inline-block">
                     <!-- Profile Image -->
                     <img src="{% if user.UserCode %}/static/assets/profile_pic/{{ user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
                         alt="avatar" class="imaged w100 rounded"
@@ -92,7 +92,23 @@
                     <a href="{% url 'update_profile_pic' %}" class="button position-absolute bottom-0 end-0">
                         <ion-icon name="camera-outline"></ion-icon>
                     </a>
+                </div> {% endcomment %}
+                <div class="position-relative d-inline-block">
+                    <!-- Profile Image -->
+                    <img src="{% if user.UserCode %}
+                                https://gyaagl.club/GoldVault/static/assets/profile_pic/{{ user.UserCode }}.png
+                            {% else %}
+                                {% static 'assets/img/sample/avatar/avatar1.jpg' %}
+                            {% endif %}" 
+                        alt="avatar" class="imaged w100 rounded"
+                        onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+
+                    <!-- Camera Icon Button -->
+                    <a href="{% url 'update_profile_pic' %}" class="button position-absolute bottom-0 end-0">
+                        <ion-icon name="camera-outline"></ion-icon>
+                    </a>
                 </div>
+
             </div>
         </div>
 
