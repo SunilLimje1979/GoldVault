@@ -3017,7 +3017,8 @@ def update_client_details(request):
     client_code = request.session.get("ClientCode", None)
     client_data = None  
 
-    api_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
+    # API to fetch client info (for pre-fill)
+    client_info_url = "https://www.gyaagl.app/goldvault_api/clientinfo"
     payload = {"ClientCode": client_code}
     headers = {
         "Accept": "application/json, text/plain, */*",
@@ -3028,12 +3029,54 @@ def update_client_details(request):
     }
 
     try:
-        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        response = requests.post(client_info_url, json=payload, headers=headers, timeout=10)
         data = response.json()
         if data.get("message_code") == 1000 and data.get("message_data"):
             client_data = data["message_data"][0]
     except Exception as e:
         print(f"Client API error: {str(e)}")
+
+    # handle form submit
+    if request.method == "POST":
+        try:
+            print("=== Client Details Submitted ===")
+
+            # prepare payload for API (ClientCode compulsory, rest optional)
+            submitted_data = {
+                "ClientCode": client_code,
+                "BusinessName": request.POST.get("BusinessName") or None,
+                "OwnerName": request.POST.get("OwnerName") or None,
+                "OwnerContact": request.POST.get("OwnerContact") or None,
+                "LoginPin": request.POST.get("LoginPin") or None,
+                "BusinessAddress": request.POST.get("BusinessAddress") or None,
+                "BusinessCityId": request.POST.get("BusinessCityId") or None,
+                "BusinessStateId": request.POST.get("BusinessStateId") or None,
+                "OwnerEmail": request.POST.get("OwnerEmail") or None,
+                "ShopPhotoURL": request.POST.get("ShopPhotoURL") or None,
+            }
+
+            # print all fields (debugging)
+            for key, value in submitted_data.items():
+                print(f"{key}: {value}")
+
+            # send to API
+            client_profile_url = "https://www.gyaagl.app/goldvault_api/clientprofile"
+            api_response = requests.post(client_profile_url, json=submitted_data, headers=headers, timeout=10)
+            api_data = api_response.json()
+
+            print("=== API Response ===", api_data)
+
+            if api_data.get("message_code") == 1000:
+                messages.success(request, api_data.get("message_text", "Client details updated successfully."))
+                # refresh local client_data for rendering updated values
+                if client_data:
+                    client_data.update({k: v for k, v in submitted_data.items() if v})
+            else:
+                messages.error(request, api_data.get("message_text", "Failed to update client details."))
+
+        except Exception as e:
+            print(f"Error in client details update: {e}")
+            messages.error(request, "Something went wrong while updating details.")
 
     return render(request, "owner/update_client_details.html", {
         "client_data": client_data

@@ -72,7 +72,7 @@
                     </div>
 
                     <!-- City -->
-                    <div class="form-group basic animated">
+                    {% comment %} <div class="form-group basic animated">
                         <div class="input-wrapper">
                             <label class="label">Business City Id</label>
                             <input type="text" class="form-control" name="BusinessCityId"
@@ -96,19 +96,7 @@
                             </i>
                         </div>
                     </div>
-
-                    <!-- Country -->
-                    <div class="form-group basic animated">
-                        <div class="input-wrapper">
-                            <label class="label">Business Country</label>
-                            <input type="text" class="form-control" name="BusinessCountry"
-                                   placeholder="Country"
-                                   value="{{ client_data.BusinessCountry|default_if_none:'' }}">
-                            <i class="clear-input">
-                                <ion-icon name="close-circle"></ion-icon>
-                            </i>
-                        </div>
-                    </div>
+                     {% endcomment %}
 
                     <!-- Owner Name -->
                     <div class="form-group basic animated">
@@ -164,15 +152,6 @@
                             {% endif %}
                         </div>
                     </div> {% endcomment %}
-
-                    <!-- Theme Color -->
-                    <div class="form-group basic animated">
-                        <div class="input-wrapper">
-                            <label class="label">Theme Color</label>
-                            <input type="color" class="form-control" name="ThemeColor"
-                                   value="{{ client_data.ThemeColor|default_if_none:'#000000' }}">
-                        </div>
-                    </div>
 
                 </div>
             </div>
