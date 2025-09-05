@@ -57,13 +57,25 @@
                 <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged w32">
                 <span class="badge badge-danger">6</span>
             </a> {% endcomment %}
-            <a href="{% url 'setting' %}" class="headerButton">
+            {% comment %} <a href="{% url 'setting' %}" class="headerButton">
                 <img src="{% if request.session.user.UserCode %}/static/assets/profile_pic/{{ request.session.user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
                     alt="{{ request.session.user.UserFullName|default:'User' }}" 
                     class="imaged w32"
                     onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
                 <span class="badge badge-danger">6</span>
+            </a> {% endcomment %}
+            <a href="{% url 'setting' %}" class="headerButton">
+                <img src="{% if request.session.user.UserCode %}
+                            https://gyaagl.club/GoldVault/static/assets/profile_pic/{{ request.session.user.UserCode }}.png
+                        {% else %}
+                            {% static 'assets/img/sample/avatar/avatar1.jpg' %}
+                        {% endif %}" 
+                    alt="{{ request.session.user.UserFullName|default:'User' }}" 
+                    class="imaged w32"
+                    onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+                <span class="badge badge-danger">6</span>
             </a>
+
 
             <!-- Logout -->
             {% comment %} <a href="{% url 'logout' %}" class="headerButton">
@@ -566,10 +578,19 @@
                             <img src="{% static 'assets/img/sample/avatar/avatar1.jpg' %}" alt="image" class="imaged  w36">
                         </div> {% endcomment %}
                         <div class="image-wrapper">
-                            <img src="{% if request.session.user.UserCode %}/static/assets/profile_pic/{{ request.session.user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
+                                         <img src="{% if request.session.user.UserCode %}
+                                                    https://gyaagl.club/GoldVault/static/assets/profile_pic/{{ request.session.user.UserCode }}.png
+                                                {% else %}
+                                                    {% static 'assets/img/sample/avatar/avatar1.jpg' %}
+                                                {% endif %}" 
+                                            alt="{{ request.session.user.UserFullName|default:'User' }}" 
+                                            class="imaged w32"
+                                            onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+
+                            {% comment %} <img src="{% if request.session.user.UserCode %}/static/assets/profile_pic/{{ request.session.user.UserCode }}.png{% else %}{% static 'assets/img/sample/avatar/avatar1.jpg' %}{% endif %}" 
                                 alt="{{ request.session.user.UserFullName|default:'User' }}" 
                                 class="imaged w36"
-                                onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';">
+                                onerror="this.onerror=null;this.src='{% static 'assets/img/sample/avatar/avatar1.jpg' %}';"> {% endcomment %}
                         </div>
                         <div class="in">
                             <strong>{{ request.session.user.UserFullName  }}</strong>
