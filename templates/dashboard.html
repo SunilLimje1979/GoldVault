@@ -47,9 +47,15 @@
         </div>
         <div class="right">
             <!-- Notifications -->
-            <a href="#" class="headerButton">
+            {% comment %} <a href="#" class="headerButton">
                 <ion-icon class="icon" name="notifications-outline"></ion-icon>
                 <span class="badge badge-danger">4</span>
+            </a> {% endcomment %}
+            <a href="{% url 'notification_list' %}" class="headerButton">
+                <ion-icon class="icon" name="notifications-outline"></ion-icon>
+                {% if unread_count > 0 %}
+                    <span class="badge badge-danger">{{ unread_count }}</span>
+                {% endif %}
             </a>
 
             <!-- Profile -->

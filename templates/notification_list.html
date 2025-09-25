@@ -1,0 +1,193 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notifications</title>
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" sizes="32x32">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body class="bg-white">
+
+<!-- App Header -->
+<div class="appHeader">
+    <div class="left">
+        {% if request.session.user.UserType == '1' %}
+            <a href="{% url 'dashboard' %}" class="headerButton goBack">
+                <ion-icon name="chevron-back-outline"></ion-icon>
+            </a>
+        {% else %}
+            <a href="{% url 'dashboard1' %}" class="headerButton goBack">
+                <ion-icon name="chevron-back-outline"></ion-icon>
+            </a>
+        {% endif %}
+    </div>
+     <div class="pageTitle" style="font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 500;">
+        Notifications
+    </div>
+    {% comment %} <div class="right">
+        <a href="#" class="headerButton" onclick="toastbox('toast-muted', 3000)">
+            <ion-icon name="notifications-off-outline"></ion-icon>
+        </a>
+    </div> {% endcomment %}
+    <div class="right">
+        <a href="#" class="headerButton" onclick="markAllAsRead()">
+            <ion-icon name="notifications-off-outline"></ion-icon>
+        </a>
+    </div>
+</div>
+
+<!-- toast bottom iconed -->
+<div id="toast-muted" class="toast-box toast-bottom bg-primary">
+    <div class="in">
+        <ion-icon name="notifications-off-outline"></ion-icon>
+        <div class="text">Notification sounds have been muted</div>
+    </div>
+    <button type="button" class="btn btn-sm btn-text-light close-button">OK</button>
+</div>
+
+<!-- App Capsule -->
+<div id="appCapsule">
+    <div class="section full">
+
+        {% if error %}
+            <div class="alert alert-danger m-2">{{ error }}</div>
+        {% else %}
+            {% if notifications %}
+            <ul class="listview image-listview flush">
+                {% for n in notifications %}
+                <li class="active">
+                    <a href="javascript:void(0);" class="item"
+                        onclick="markNotificationAsRead('{{ n.Notification_Id }}', '{{ n.Notification_Status }}')">
+                        <!-- Dynamic Icon/Category -->
+                        <div class="icon-box 
+                            {% if n.Notification_Category == '1' %} bg-primary
+                            {% elif n.Notification_Category == '2' %} bg-success
+                            {% elif n.Notification_Category == '3' %} bg-danger
+                            {% else %} bg-warning {% endif %}">
+                            <ion-icon 
+                                {% if n.Notification_Category == '1' %}
+                                    name="notifications-outline"
+                                {% elif n.Notification_Category == '2' %}
+                                    name="arrow-forward-outline"
+                                {% elif n.Notification_Category == '3' %}
+                                    name="key-outline"
+                                {% else %}
+                                    name="chatbubble-outline"
+                                {% endif %}>
+                            </ion-icon>
+                        </div>
+
+                        <div class="in">
+                            <div>
+                                <!-- Title & Message -->
+                                <div class="mb-05"><strong>{{ n.Notification_Text }}</strong></div>
+                                <div class="text-small mb-05">
+                                    {% if n.Notification_ActionDetails and n.Notification_ActionDetails != "0" %}
+                                        {{ n.Notification_ActionDetails }}
+                                    {% endif %}
+                                </div>
+                                <div class="text-xsmall">{{ n.Notification_CreatedOn }}</div>
+                            </div>
+                            {% if n.Notification_Status == "1" %}
+                                <span class="badge badge-primary badge-empty"></span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <p class="text-center mt-3">No notifications found.</p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Loader -->
+<div id="loader" style="display: none;">
+    <img src="{% static 'assets/img/loading-icon.png' %}" alt="icon" class="loading-icon">
+</div>
+
+<!-- Sweetalert for messages -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+{% if messages %}
+<script>
+    {% for message in messages %}
+        swal({
+            title: "{{ message.tags|title }}",
+            text: "{{ message|escapejs }}",
+            type: "{% if 'success' in message.tags %}success{% elif 'danger' in message.tags %}error{% else %}info{% endif %}",
+            showConfirmButton: true
+        });
+    {% endfor %}
+</script>
+{% endif %}
+
+<script>
+function markAllAsRead() {
+    fetch("{% url 'update_all_notifications_read' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            swal("Success", data.message, "success");
+            // Optionally refresh page after success
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            swal("Error", data.message, "error");
+        }
+    })
+    .catch(err => {
+        swal("Error", "Something went wrong: " + err, "error");
+    });
+}
+</script>
+<script>
+function markNotificationAsRead(notificationId, status) {
+    // ✅ check status before making API call
+    if (status !== "1") {
+        return; // stop execution if not 1
+    }
+
+    const payload = {
+        Notification_Id: notificationId
+    };
+
+    fetch("{% url 'update_notification_status' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            swal("Success", data.message, "success");
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            swal("Error", data.message, "error");
+        }
+    })
+    .catch(err => {
+        swal("Error", "Something went wrong: " + err, "error");
+    });
+}
+</script>
+
+
+</body>
+</html>

@@ -695,6 +695,23 @@ def dashboard_view(request):
 
     except Exception as e:
         print("Dashboard Get Summary API Exception:", e)
+        
+    # ---------------- Get Notification Unread Counter ----------------
+    unread_count = 0
+    notif_api_url = "https://www.gyaagl.app/goldvault_api/notification/unreadcounter"
+    notif_payload = {
+        "ClientCode": ClientCode,
+        "UserCode": user_code
+    }
+
+    try:
+        notif_response = requests.post(notif_api_url, json=notif_payload, headers=headers, timeout=10)
+        if notif_response.status_code == 200:
+            notif_data = notif_response.json()
+            if notif_data.get("message_code") == 1000 and notif_data.get("message_data") is not None:
+                unread_count = notif_data["message_data"].get("UnreadCounter", 0)
+    except Exception as e:
+        print("Notification API Exception:", e)
 
     print(bookings)
     print(withdrawls)
@@ -704,6 +721,7 @@ def dashboard_view(request):
         "sell_rate": sell_rate,
         "bookings":bookings,
         "withdrawls":withdrawls,
+        "unread_count": unread_count
     })
     # return render(request, "dashboard.html", {"stats": stats, "user": user})
     
@@ -804,11 +822,33 @@ def dashboard1_view(request):
                 transactions = trans_data["message_data"][:5] # take latest 5
     except Exception as e:
         print("Transactions API Exception:", e)
+        
+        
+        # ---------------- Get Notification Unread Counter API ----------------
+    unread_count = 0
+    notif_api_url = "https://www.gyaagl.app/goldvault_api/notification/unreadcounter"
+    notif_payload = {
+        "ClientCode": ClientCode,
+        "UserCode": user_code
+    }
+
+    try:
+        notif_response = requests.post(notif_api_url, json=notif_payload, headers=headers, timeout=10)
+        # print("DEBUG: Notification API response:", notif_response.text)
+
+        if notif_response.status_code == 200:
+            notif_data = notif_response.json()
+            if notif_data.get("message_code") == 1000 and notif_data.get("message_data") is not None:
+                unread_count = notif_data["message_data"].get("UnreadCounter", 0)
+    except Exception as e:
+        print("Notification API Exception:", e)
+
 
     return render(request, "dashboard1.html", {
         "stats": stats,
         "sell_rate": sell_rate,
-        "transactions": transactions
+        "transactions": transactions,
+        "unread_count": unread_count
     })
     
 ########################################### Get Transection List ##################################################
@@ -3152,3 +3192,127 @@ def update_bank_details(request):
     return render(request, "owner/update_bank_details.html", {
         "client_data": client_data
     })
+
+##################################### Notification ######################################
+@user_required
+def notification_list(request):
+    user_code = request.session.get('user', {}).get('UserCode')
+    client_code = request.session.get('ClientCode')
+    # user_code = "675c4ad2-83d1-11f0-9769-525400ce20fd"
+    # client_code = "675c347d-83d1-11f0-9769-525400ce20fd"
+
+    api_url = "https://www.gyaagl.app/goldvault_api/notification/notificationlist"
+
+    payload = {
+        "ClientCode": client_code,
+        "UserCode": user_code,
+    }
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.gyaagl.app",
+        "Referer": "https://www.gyaagl.app/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    }
+
+    notifications = []
+    error = None
+
+    try:
+        resp = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        # print(data)
+
+        if data.get("message_code") == 1000 and data.get("message_text"):
+            notifications = data["message_text"]   # list of notifications
+        else:
+            error = data.get("message_text", "No notifications found.")
+    except requests.exceptions.RequestException as e:
+        error = f"Request error: {e}"
+    except Exception as e:
+        error = f"Error: {e}"
+
+    return render(request, "notification_list.html", {
+        "notifications": notifications,
+        "error": error,
+    })
+
+
+
+@csrf_exempt
+def update_all_notifications_read(request):
+    if request.method == "POST":
+        user_code = request.session.get('user').get('UserCode')
+        client_code = request.session.get('ClientCode')
+        # user_code = "675c4ad2-83d1-11f0-9769-525400ce20fd"
+        # client_code = "675c347d-83d1-11f0-9769-525400ce20fd"
+
+        api_url = "https://www.gyaagl.app/goldvault_api/notification/updateallnotificationread"
+        payload = {
+            "ClientCode": client_code,
+            "UserCode": user_code
+        }
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+
+        try:
+            response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                print(data)
+                if data.get("message_code") == 1000:
+                    return JsonResponse({"success": True, "message": "All notifications marked as read"})
+                else:
+                    return JsonResponse({"success": False, "message": data.get("message_text", "API Error")})
+            else:
+                return JsonResponse({"success": False, "message": "Failed with status code {}".format(response.status_code)})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)})
+    return JsonResponse({"success": False, "message": "Invalid request method"})
+
+@csrf_exempt
+def update_notification_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+
+            # ✅ Get codes from session instead of frontend
+            user_data = request.session.get("user", {})
+            user_code = user_data.get("UserCode")
+            client_code = user_data.get("ClientCode")
+  
+            # user_code = "675c4ad2-83d1-11f0-9769-525400ce20fd"
+            # client_code = "675c347d-83d1-11f0-9769-525400ce20fd"
+
+            payload = {
+                "ClientCode": client_code,
+                "UserCode": user_code,
+                "Notification_Id": data.get("Notification_Id")
+            }
+            
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+
+            print("Payload to API:", payload)
+
+            # Call external API
+            url = "https://www.gyaagl.app/goldvault_api/notification/statusupdate"
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            api_response = response.json()
+            print("API Response:", api_response)
+
+            if api_response.get("message_code") == 1000:
+                return JsonResponse({"success": True, "message": "Notification read successfully"})
+            else:
+                return JsonResponse({"success": False, "message": api_response.get("message_text", "Failed to update")})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)})
+    else:
+        return JsonResponse({"success": False, "message": "Invalid request method"})

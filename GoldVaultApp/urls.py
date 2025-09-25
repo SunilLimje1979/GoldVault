@@ -21,7 +21,10 @@ urlpatterns = [
     path('member-list/', views.member_list, name='member_list'),
     path('withdrawl-list/', views.withdrawal_list, name='withdrawl_list'),
     path('get_cities/', views.get_cities, name='get_cities'),
-    
+    path('notification_list/', views.notification_list, name='notification_list'),
+    path("update_all_notifications_read/", views.update_all_notifications_read, name="update_all_notifications_read"),
+    path("update_notification_status/", views.update_notification_status, name="update_notification_status"),
+     
     path('update_bank_details/', views.update_bank_details, name='update_bank_details'),
     path('update_client_details/', views.update_client_details, name='update_client_details'),
     
